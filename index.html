@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Magical Mirai 2026</title>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/textalive-app-api/dist/index.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+:root{
+  --bg:#03020a;
+  --surface:#0d0b1e;
+  --miku1:#39c5bb;
+  --miku2:#0ff0e4;
+  --miku3:#00fff7;
+  --hair:#5ee7df;
+  --accent:#00e5ff;
+  --accent3:#ffe600;
+  --text:#e8e0ff;
+  --muted:#5a526e;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+  font-family:'Zen Kurenaido','Noto Serif JP',serif;
+  background:var(--bg);
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+#starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+#bin-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.12}
+
+
+#eq-wrap{
+  position:fixed;bottom:0;left:0;right:0;
+  height:60px;
+  display:flex;align-items:flex-end;justify-content:center;gap:3px;
+  z-index:2;pointer-events:none;
+}
+.eq-bar{
+  width:4px;border-radius:2px 2px 0 0;
+  background:linear-gradient(to top,var(--miku1),var(--miku3));
+  height:4px;
+  transition:height 0.1s ease;
+  opacity:0.5;
+}
+
+#stage{
+  position:relative;z-index:3;
+  width:100vw;height:100vh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+
+#lyric-wrap{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  pointer-events:none;gap:1.4rem;
+}
+.lyric-line{
+  font-size:clamp(1.8rem,5vw,3.8rem);
+  font-weight:700;
+  letter-spacing:0.14em;
+  text-align:center;
+  padding:0 2.5rem;
+  transition:opacity 0.3s,transform 0.3s;
+  line-height:1.5;
+}
+.lyric-line.current{
+  color:#fff;
+  text-shadow:0 0 20px var(--miku2),0 0 55px var(--miku1),0 0 2px #fff;
+  animation:pulse-lyric 0.45s ease;
+}
+.lyric-line.prev{
+  color:var(--muted);opacity:0.38;
+  font-size:clamp(1rem,2.5vw,1.9rem);
+  transform:translateY(-0.3em) scale(0.84);
+}
+.lyric-line.next{
+  color:var(--muted);opacity:0.38;
+  font-size:clamp(1rem,2.5vw,1.9rem);
+  transform:translateY(0.3em) scale(0.84);
+}
+@keyframes pulse-lyric{
+  0%{transform:scale(0.88);opacity:0}
+  60%{transform:scale(1.05);opacity:1}
+  100%{transform:scale(1)}
+}
+
+.char-unit{
+  display:inline-block;
+  transition:color 0.06s,transform 0.12s,text-shadow 0.12s;
+}
+.char-unit.active{
+  color:var(--accent3);
+  text-shadow:0 0 10px var(--accent3),0 0 25px var(--accent3);
+  transform:translateY(-5px) scale(1.15);
+}
+.char-unit.passed{
+  color:var(--hair);
+  opacity:0.7;
+}
+
+#beat-indicator{
+  position:fixed;top:2rem;right:2.5rem;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--miku2);
+  box-shadow:0 0 18px var(--miku2),0 0 40px var(--miku1);
+  opacity:0;z-index:10;
+  transition:opacity 0.05s;
+}
+#beat-indicator.on{opacity:1}
+
+#chord-badge{
+  position:fixed;bottom:6rem;left:50%;
+  transform:translateX(-50%);
+  font-size:0.82rem;letter-spacing:0.22em;
+  color:var(--miku2);opacity:0;
+  transition:opacity 0.2s;z-index:10;
+  text-shadow:0 0 12px var(--miku1);
+}
+#chord-badge.visible{opacity:0.75}
+
+#controls{
+  position:fixed;bottom:1.6rem;left:50%;
+  transform:translateX(-50%);
+  display:flex;gap:0.9rem;z-index:20;align-items:center;
+  background:rgba(3,2,10,0.7);
+  border:1px solid rgba(57,197,187,0.2);
+  padding:0.7rem 1.2rem;
+  border-radius:40px;
+  backdrop-filter:blur(12px);
+}
+.btn{
+  background:transparent;
+  border:1.5px solid var(--miku1);
+  color:var(--miku1);
+  font-family:inherit;font-size:0.72rem;
+  letter-spacing:0.15em;
+  padding:0.48rem 1.2rem;
+  cursor:pointer;border-radius:20px;
+  transition:background 0.2s,color 0.2s,box-shadow 0.2s;
+}
+.btn:hover,.btn:focus{
+  background:var(--miku1);color:var(--bg);
+  box-shadow:0 0 20px var(--miku1);outline:none;
+}
+#song-select{
+  background:rgba(13,11,30,0.8);
+  border:1px solid rgba(57,197,187,0.3);
+  color:var(--text);font-family:inherit;
+  font-size:0.72rem;padding:0.48rem 0.8rem;
+  border-radius:20px;cursor:pointer;
+  max-width:240px;
+}
+
+#progress-bar{
+  position:fixed;bottom:0;left:0;
+  height:3px;
+  background:linear-gradient(90deg,var(--miku1),var(--miku3),var(--miku2));
+  width:0%;z-index:20;
+  transition:width 0.25s linear;
+  box-shadow:0 0 10px var(--miku2);
+}
+
+#info-banner{
+  position:fixed;top:1.4rem;left:50%;
+  transform:translateX(-50%);
+  text-align:center;z-index:10;
+  background:rgba(3,2,10,0.5);
+  border:1px solid rgba(57,197,187,0.15);
+  padding:0.4rem 1.4rem;border-radius:20px;
+  backdrop-filter:blur(8px);
+  white-space:nowrap;
+}
+#info-banner .label-top{
+  font-size:0.6rem;letter-spacing:0.28em;
+  color:var(--miku1);text-transform:uppercase;
+}
+#info-banner .song-name{
+  font-size:1rem;color:#fff;letter-spacing:0.1em;
+}
+
+#loading{
+  position:fixed;inset:0;z-index:100;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1.2rem;
+  background:var(--bg);transition:opacity 0.6s;
+}
+#loading.hidden{opacity:0;pointer-events:none}
+.loader-ring{
+  width:56px;height:56px;
+  border:2.5px solid var(--surface);
+  border-top-color:var(--miku2);
+  border-right-color:var(--miku1);
+  border-radius:50%;
+  animation:spin 0.75s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:0.76rem;color:var(--muted);letter-spacing:0.22em}
+
+.ripple{
+  position:fixed;border-radius:50%;
+  border:1.5px solid var(--miku1);
+  pointer-events:none;z-index:5;
+  animation:ripple-out 0.9s ease forwards;
+}
+@keyframes ripple-out{
+  from{width:8px;height:8px;opacity:0.8;transform:translate(-50%,-50%) scale(1)}
+  to{width:180px;height:180px;opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* Song themes */
+.song-theme-0{--miku1:#39c5bb;--miku2:#0ff0e4;--miku3:#00fff7;--hair:#5ee7df}
+.song-theme-1{--miku1:#7c5cbf;--miku2:#b08fff;--miku3:#d4b4ff;--hair:#a07de0}
+.song-theme-2{--miku1:#e85d8a;--miku2:#ff8cb0;--miku3:#ffc2d8;--hair:#ff6a9a}
+.song-theme-3{--miku1:#f0a500;--miku2:#ffc84a;--miku3:#ffe399;--hair:#f5c046}
+.song-theme-4{--miku1:#3da8e0;--miku2:#7ecfff;--miku3:#b5e8ff;--hair:#5bbdff}
+.song-theme-5{--miku1:#e05050;--miku2:#ff8080;--miku3:#ffb8b8;--hair:#ff6666}
+</style>
+</head>
+<body class="song-theme-0">
+
+<canvas id="starfield"></canvas>
+<canvas id="bin-canvas"></canvas>
+
+<div id="loading">
+  <div class="loader-ring"></div>
+  <p>LOADING TEXTALIVE…</p>
+</div>
+
+<div id="info-banner">
+  <div class="label-top">Magical Mirai 2026 · Lyric App · Rico Eriansyah</div>
+  <div class="song-name" id="song-title">—</div>
+</div>
+
+
+<div id="eq-wrap"></div>
+<div id="beat-indicator"></div>
+<div id="chord-badge"></div>
+
+<div id="stage">
+  <div id="lyric-wrap">
+    <div class="lyric-line prev" id="lyric-prev"></div>
+    <div class="lyric-line current" id="lyric-current">♪</div>
+    <div class="lyric-line next" id="lyric-next"></div>
+  </div>
+</div>
+
+<div id="controls">
+  <select id="song-select">
+    <option value="6W2N">こたえて / imie</option>
+    <option value="zoqO">アフター・ザ・カーテン / Rulmry</option>
+    <option value="PNpQ">シャッターチャンス / 夜未アガリ</option>
+    <option value="B3yJ">世界最後の音楽隊 / 夏山よつぎ×ど～ぱみん</option>
+    <option value="QBdL">トリツクロジー / 鶴三</option>
+    <option value="E2i3">TAKEOVER / Twinfield</option>
+  </select>
+  <button class="btn" id="btn-play">▶ PLAY</button>
+  <button class="btn" id="btn-pause">⏸ PAUSE</button>
+  <button class="btn" id="btn-stop">■ STOP</button>
+</div>
+
+<div id="progress-bar"></div>
+
+<script>
+const SONGS = {
+  "6W2N":{name:"こたえて / imie",url:"https://piapro.jp/t/6W2N/20251215164617",theme:0,video:{beatId:4827293,chordId:2963754,repetitiveSegmentId:3086261,lyricId:126519,lyricDiffId:28645}},
+  "zoqO":{name:"アフター・ザ・カーテン / Rulmry",url:"https://piapro.jp/t/zoqO/20251214200738",theme:1,video:{beatId:4827294,chordId:2963755,repetitiveSegmentId:3086262,lyricId:126591,lyricDiffId:28627}},
+  "PNpQ":{name:"シャッターチャンス / 夜未アガリ",url:"https://piapro.jp/t/PNpQ/20251209170719",theme:2,video:{beatId:4827295,chordId:2963756,repetitiveSegmentId:3086263,lyricId:126542,lyricDiffId:28628}},
+  "B3yJ":{name:"世界最後の音楽隊 / 夏山よつぎ×ど～ぱみん",url:"https://piapro.jp/t/B3yJ/20251215061727",theme:3,video:{beatId:4827296,chordId:2963757,repetitiveSegmentId:3086264,lyricId:126594,lyricDiffId:28629}},
+  "QBdL":{name:"トリツクロジー / 鶴三",url:"https://piapro.jp/t/QBdL/20251215094303",theme:4,video:{beatId:4827297,chordId:2963758,repetitiveSegmentId:3086265,lyricId:126593,lyricDiffId:28630}},
+  "E2i3":{name:"TAKEOVER / Twinfield",url:"https://piapro.jp/t/E2i3/20251215092113",theme:5,video:{beatId:4827298,chordId:2963759,repetitiveSegmentId:3086266,lyricId:126533,lyricDiffId:28631}}
+};
+
+const $loading  = document.getElementById('loading');
+const $songTitle= document.getElementById('song-title');
+const $prev     = document.getElementById('lyric-prev');
+const $current  = document.getElementById('lyric-current');
+const $next     = document.getElementById('lyric-next');
+const $beat     = document.getElementById('beat-indicator');
+const $chord    = document.getElementById('chord-badge');
+const $progress = document.getElementById('progress-bar');
+const $songSel  = document.getElementById('song-select');
+const $play     = document.getElementById('btn-play');
+const $pause    = document.getElementById('btn-pause');
+const $stop     = document.getElementById('btn-stop');
+
+const $eqWrap   = document.getElementById('eq-wrap');
+
+let player = null;
+let phrases = [];
+let currentPhraseIdx = -1;
+let charMaps = [];
+
+// EQ bars
+const EQ_COUNT = 48;
+for(let i=0;i<EQ_COUNT;i++){
+  const b=document.createElement('div');
+  b.className='eq-bar';
+  $eqWrap.appendChild(b);
+}
+const eqBars=document.querySelectorAll('.eq-bar');
+let eqAnim=null;
+function animateEq(){
+  eqBars.forEach(b=>{b.style.height=(4+Math.random()*46)+'px';});
+  eqAnim=requestAnimationFrame(animateEq);
+}
+function stopEq(){
+  if(eqAnim){cancelAnimationFrame(eqAnim);eqAnim=null;}
+  eqBars.forEach(b=>b.style.height='4px');
+}
+
+// Starfield
+(function(){
+  const canvas=document.getElementById('starfield');
+  const ctx=canvas.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  function mkStar(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+0.2,vx:(Math.random()-0.5)*0.07,vy:(Math.random()-0.5)*0.07,alpha:Math.random()*0.7+0.2,tw:Math.random()*0.02}}
+  function init(){resize();stars=Array.from({length:220},mkStar)}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(const s of stars){
+      s.x+=s.vx;s.y+=s.vy;
+      s.alpha+=s.tw;
+      if(s.alpha>0.9||s.alpha<0.1)s.tw*=-1;
+      if(s.x<0)s.x=W;if(s.x>W)s.x=0;
+      if(s.y<0)s.y=H;if(s.y>H)s.y=0;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(180,240,255,${s.alpha})`;ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  init();draw();
+})();
+
+// Binary rain
+(function(){
+  const canvas=document.getElementById('bin-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,cols,drops=[];
+  const FS=13;
+  function resize(){
+    W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
+    cols=Math.floor(W/FS);
+    drops=Array.from({length:cols},()=>Math.random()*H/FS|0);
+  }
+  function getColor(){return getComputedStyle(document.body).getPropertyValue('--miku2').trim()||'#0ff0e4'}
+  function draw(){
+    ctx.fillStyle='rgba(3,2,10,0.04)';ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=getColor();ctx.font=FS+'px monospace';
+    for(let i=0;i<drops.length;i++){
+      ctx.globalAlpha=Math.random()*0.5+0.1;
+      ctx.fillText(Math.random()>0.5?'1':'0',i*FS,drops[i]*FS);
+      if(drops[i]*FS>H&&Math.random()>0.975)drops[i]=0;
+      drops[i]++;
+    }
+    ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  resize();draw();
+})();
+
+function spawnRipple(){
+  const el=document.createElement('div');
+  el.className='ripple';
+  el.style.left=(15+Math.random()*70)+'vw';
+  el.style.top=(15+Math.random()*65)+'vh';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),950);
+}
+
+function buildPhraseHtml(text){
+  if(!text)return'';
+  return[...text].map((ch,i)=>`<span class="char-unit" data-idx="${i}">${ch===' '?'&nbsp;':ch}</span>`).join('');
+}
+
+// ── KEY FIX: build timing map per char index in phrase.text ──────────────
+function buildCharMap(phrase){
+  const fullText=phrase.text||'';
+  const timings=new Array([...fullText].length).fill(null);
+  let charPos=0;
+  let w=phrase.firstWord;
+  while(w){
+    const wordChars=[...( w.text||'')];
+    // find word start position in fullText (in codepoints)
+    const fullChars=[...fullText];
+    let wStart=-1;
+    for(let i=charPos;i<=fullChars.length-wordChars.length;i++){
+      let match=true;
+      for(let k=0;k<wordChars.length;k++){
+        if(fullChars[i+k]!==wordChars[k]){match=false;break;}
+      }
+      if(match){wStart=i;break;}
+    }
+    if(wStart>=0){
+      charPos=wStart;
+      let c=w.firstChar;
+      let cOffset=0;
+      while(c){
+        const cLen=[...(c.text||'')].length;
+        for(let k=0;k<cLen;k++){
+          if(charPos+cOffset+k<timings.length){
+            timings[charPos+cOffset+k]={startTime:c.startTime,endTime:c.endTime};
+          }
+        }
+        cOffset+=cLen;
+        c=c.next;
+      }
+      charPos+=wordChars.length;
+    }
+    w=w.next;
+  }
+  return timings;
+}
+
+function updatePhrase(idx){
+  if(idx===currentPhraseIdx)return;
+  currentPhraseIdx=idx;
+  $prev.innerHTML   =phrases[idx-1]?.text?buildPhraseHtml(phrases[idx-1].text):'';
+  $current.innerHTML=phrases[idx]?.text  ?buildPhraseHtml(phrases[idx].text)  :'';
+  $next.innerHTML   =phrases[idx+1]?.text?buildPhraseHtml(phrases[idx+1].text):'';
+}
+
+function highlightChars(pos,phraseIdx){
+  const timings=charMaps[phraseIdx];
+  if(!timings)return;
+  const spans=document.querySelectorAll('#lyric-current .char-unit');
+  spans.forEach((el,i)=>{
+    const t=timings[i];
+    if(!t){el.classList.remove('active','passed');return;}
+    if(pos>=t.startTime&&pos<t.endTime){
+      el.classList.add('active');el.classList.remove('passed');
+    } else if(pos>=t.endTime){
+      el.classList.remove('active');el.classList.add('passed');
+    } else {
+      el.classList.remove('active','passed');
+    }
+  });
+}
+
+function clearHighlight(){
+  document.querySelectorAll('#lyric-current .char-unit').forEach(el=>el.classList.remove('active','passed'));
+}
+
+function applySongTheme(key){
+  const t=SONGS[key]?.theme??0;
+  document.body.className='song-theme-'+t;
+}
+
+function initPlayer(){
+  const {Player}=TextAliveApp;
+  player=new Player({
+    app:{token:"E96Wa5egutbj0ueY"},
+    mediaElement:document.createElement('audio'),
+    mediaBannerPosition:'top left'
+  });
+  player.addListener({
+    onAppReady(app){
+      if(!app.managed)loadSong($songSel.value);
+      $loading.classList.add('hidden');
+    },
+    onVideoReady(v){
+      phrases=[];charMaps=[];
+      let p=v.firstPhrase;
+      while(p){phrases.push(p);charMaps.push(buildCharMap(p));p=p.next;}
+      currentPhraseIdx=-1;
+      $current.innerHTML='♪';$prev.innerHTML='';$next.innerHTML='';
+    },
+    onTimerReady(){
+      $songTitle.textContent=SONGS[$songSel.value]?.name||'—';
+    },
+    onTimeUpdate(pos){
+      if(!player.video)return;
+      const dur=player.video.duration;
+      if(dur>0)$progress.style.width=((pos/dur)*100)+'%';
+      let found=-1;
+      for(let i=0;i<phrases.length;i++){
+        if(pos>=phrases[i].startTime&&pos<phrases[i].endTime){found=i;break;}
+      }
+      if(found>=0){updatePhrase(found);highlightChars(pos,found);}
+      else clearHighlight();
+    },
+    onBeat(beat){
+      $beat.classList.add('on');
+      spawnRipple();
+      setTimeout(()=>{$beat.classList.remove('on');},120);
+    },
+    onChord(chord){
+      if(chord?.name){
+        $chord.textContent=chord.name;$chord.classList.add('visible');
+        clearTimeout($chord._t);
+        $chord._t=setTimeout(()=>$chord.classList.remove('visible'),1300);
+      }
+    },
+    onPlay(){animateEq()},
+    onPause(){stopEq()},
+    onStop(){
+      stopEq();$progress.style.width='0%';
+      $current.innerHTML='♪';$prev.innerHTML='';$next.innerHTML='';
+      clearHighlight();
+    }
+  });
+}
+
+function loadSong(key){
+  const song=SONGS[key];
+  if(!song||!player)return;
+  applySongTheme(key);
+  $songTitle.textContent=song.name;
+  $loading.classList.remove('hidden');
+  player.createFromSongUrl(song.url,{video:song.video})
+    .then(()=>$loading.classList.add('hidden'))
+    .catch(err=>{console.error(err);$loading.classList.add('hidden');});
+}
+
+$play.addEventListener('click', ()=>player?.requestPlay());
+$pause.addEventListener('click',()=>player?.requestPause());
+$stop.addEventListener('click', ()=>player?.requestStop());
+$songSel.addEventListener('change',()=>{player?.requestStop();loadSong($songSel.value);});
+
+initPlayer();
+</script>
+</body>
+</html>
