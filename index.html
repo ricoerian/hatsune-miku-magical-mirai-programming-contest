@@ -8,6 +8,8 @@
 <script src="https://unpkg.com/textalive-app-api/dist/index.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+
+/* ── Variables ── */
 :root{
   --bg:#03020a;
   --surface:#0d0b1e;
@@ -16,10 +18,13 @@
   --miku3:#00fff7;
   --hair:#5ee7df;
   --accent:#00e5ff;
+  --accent2:#ff4fce;
   --accent3:#ffe600;
   --text:#e8e0ff;
   --muted:#5a526e;
 }
+
+/* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
 body{
@@ -33,24 +38,28 @@ body{
   position:relative;
 }
 
+/* ── Backgrounds ── */
 #starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
-#bin-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.12}
+#bin-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.08}
 
-
+/* ── EQ bars ──
+   Mobile: fewer, thinner bars
+*/
 #eq-wrap{
   position:fixed;bottom:0;left:0;right:0;
-  height:60px;
-  display:flex;align-items:flex-end;justify-content:center;gap:3px;
+  height:44px;
+  display:flex;align-items:flex-end;justify-content:center;gap:2px;
   z-index:2;pointer-events:none;
 }
 .eq-bar{
-  width:4px;border-radius:2px 2px 0 0;
+  width:3px;border-radius:2px 2px 0 0;
   background:linear-gradient(to top,var(--miku1),var(--miku3));
-  height:4px;
+  height:3px;
   transition:height 0.1s ease;
-  opacity:0.5;
+  opacity:0.45;
 }
 
+/* ── Stage ── */
 #stage{
   position:relative;z-index:3;
   width:100vw;height:100vh;
@@ -58,35 +67,47 @@ body{
   align-items:center;justify-content:center;
 }
 
+/* ── Lyric wrap ── */
 #lyric-wrap{
-  position:absolute;inset:0;
+  position:absolute;
+  top:0;left:0;right:0;
+  /* reserve space: top for banner, bottom for controls */
+  bottom:0;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  pointer-events:none;gap:1.4rem;
+  pointer-events:none;
+  gap:0.9rem;
+  /* push content away from controls on mobile */
+  padding:5rem 1.2rem 7rem;
 }
+
+/* ── Lyric lines — MOBILE FIRST ── */
 .lyric-line{
-  font-size:clamp(1.8rem,5vw,3.8rem);
+  font-size:clamp(1.5rem,7vw,2.4rem);
   font-weight:700;
-  letter-spacing:0.14em;
+  letter-spacing:0.1em;
   text-align:center;
-  padding:0 2.5rem;
+  width:100%;
+  padding:0 0.5rem;
   transition:opacity 0.3s,transform 0.3s;
   line-height:1.5;
+  word-break:break-word;
+  overflow-wrap:break-word;
 }
 .lyric-line.current{
   color:#fff;
-  text-shadow:0 0 20px var(--miku2),0 0 55px var(--miku1),0 0 2px #fff;
+  text-shadow:0 0 16px var(--miku2),0 0 40px var(--miku1),0 0 2px #fff;
   animation:pulse-lyric 0.45s ease;
 }
 .lyric-line.prev{
-  color:var(--muted);opacity:0.38;
-  font-size:clamp(1rem,2.5vw,1.9rem);
-  transform:translateY(-0.3em) scale(0.84);
+  color:var(--muted);opacity:0.35;
+  font-size:clamp(0.85rem,4vw,1.3rem);
+  transform:translateY(-0.25em) scale(0.84);
 }
 .lyric-line.next{
-  color:var(--muted);opacity:0.38;
-  font-size:clamp(1rem,2.5vw,1.9rem);
-  transform:translateY(0.3em) scale(0.84);
+  color:var(--muted);opacity:0.35;
+  font-size:clamp(0.85rem,4vw,1.3rem);
+  transform:translateY(0.25em) scale(0.84);
 }
 @keyframes pulse-lyric{
   0%{transform:scale(0.88);opacity:0}
@@ -94,109 +115,152 @@ body{
   100%{transform:scale(1)}
 }
 
+/* ── Char units ── */
 .char-unit{
   display:inline-block;
   transition:color 0.06s,transform 0.12s,text-shadow 0.12s;
 }
 .char-unit.active{
   color:var(--accent3);
-  text-shadow:0 0 10px var(--accent3),0 0 25px var(--accent3);
-  transform:translateY(-5px) scale(1.15);
+  text-shadow:0 0 10px var(--accent3),0 0 22px var(--accent3);
+  transform:translateY(-4px) scale(1.12);
 }
 .char-unit.passed{
   color:var(--hair);
   opacity:0.7;
 }
 
+/* ── Beat indicator ── */
 #beat-indicator{
-  position:fixed;top:2rem;right:2.5rem;
-  width:16px;height:16px;border-radius:50%;
+  position:fixed;
+  top:1rem;right:1rem;
+  width:12px;height:12px;border-radius:50%;
   background:var(--miku2);
-  box-shadow:0 0 18px var(--miku2),0 0 40px var(--miku1);
+  box-shadow:0 0 12px var(--miku2),0 0 28px var(--miku1);
   opacity:0;z-index:10;
   transition:opacity 0.05s;
 }
 #beat-indicator.on{opacity:1}
 
+/* ── Chord badge ── */
 #chord-badge{
-  position:fixed;bottom:6rem;left:50%;
-  transform:translateX(-50%);
-  font-size:0.82rem;letter-spacing:0.22em;
+  position:fixed;
+  bottom:5.5rem;
+  left:50%;transform:translateX(-50%);
+  font-size:0.72rem;letter-spacing:0.2em;
   color:var(--miku2);opacity:0;
   transition:opacity 0.2s;z-index:10;
-  text-shadow:0 0 12px var(--miku1);
+  text-shadow:0 0 10px var(--miku1);
+  white-space:nowrap;
 }
 #chord-badge.visible{opacity:0.75}
 
+/* ── Controls — MOBILE FIRST
+   Two rows: select on top, buttons below
+── */
 #controls{
-  position:fixed;bottom:1.6rem;left:50%;
-  transform:translateX(-50%);
-  display:flex;gap:0.9rem;z-index:20;align-items:center;
-  background:rgba(3,2,10,0.7);
+  position:fixed;
+  bottom:1rem;
+  left:50%;transform:translateX(-50%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0.5rem;
+  z-index:20;
+  width:calc(100% - 2rem);
+  max-width:420px;
+  background:rgba(3,2,10,0.75);
   border:1px solid rgba(57,197,187,0.2);
-  padding:0.7rem 1.2rem;
-  border-radius:40px;
+  padding:0.65rem 0.9rem;
+  border-radius:20px;
   backdrop-filter:blur(12px);
+}
+#btn-row{
+  display:flex;
+  gap:0.5rem;
+  justify-content:center;
+  width:100%;
 }
 .btn{
   background:transparent;
   border:1.5px solid var(--miku1);
   color:var(--miku1);
-  font-family:inherit;font-size:0.72rem;
-  letter-spacing:0.15em;
-  padding:0.48rem 1.2rem;
-  cursor:pointer;border-radius:20px;
+  font-family:inherit;
+  font-size:0.68rem;
+  letter-spacing:0.12em;
+  padding:0.45rem 0.9rem;
+  cursor:pointer;border-radius:16px;
   transition:background 0.2s,color 0.2s,box-shadow 0.2s;
+  flex:1;
+  /* bigger tap target on touch */
+  min-height:40px;
 }
 .btn:hover,.btn:focus{
   background:var(--miku1);color:var(--bg);
-  box-shadow:0 0 20px var(--miku1);outline:none;
+  box-shadow:0 0 16px var(--miku1);outline:none;
+}
+/* active state for touch feedback */
+.btn:active{
+  background:var(--miku1);color:var(--bg);
+  transform:scale(0.96);
 }
 #song-select{
-  background:rgba(13,11,30,0.8);
+  background:rgba(13,11,30,0.85);
   border:1px solid rgba(57,197,187,0.3);
   color:var(--text);font-family:inherit;
-  font-size:0.72rem;padding:0.48rem 0.8rem;
-  border-radius:20px;cursor:pointer;
-  max-width:240px;
+  font-size:0.68rem;
+  padding:0.45rem 0.7rem;
+  border-radius:16px;cursor:pointer;
+  width:100%;
+  min-height:40px;
+  /* prevent zoom on iOS when font-size < 16px */
+  font-size:16px;
 }
 
+/* ── Progress bar ── */
 #progress-bar{
   position:fixed;bottom:0;left:0;
   height:3px;
-  background:linear-gradient(90deg,var(--miku1),var(--miku3),var(--miku2));
-  width:0%;z-index:20;
+  background:linear-gradient(90deg,var(--miku1),var(--miku3),var(--accent2));
+  width:0%;z-index:30;
   transition:width 0.25s linear;
-  box-shadow:0 0 10px var(--miku2);
+  box-shadow:0 0 8px var(--miku2);
 }
 
+/* ── Info banner ── */
 #info-banner{
-  position:fixed;top:1.4rem;left:50%;
+  position:fixed;top:0.8rem;left:50%;
   transform:translateX(-50%);
   text-align:center;z-index:10;
-  background:rgba(3,2,10,0.5);
+  background:rgba(3,2,10,0.6);
   border:1px solid rgba(57,197,187,0.15);
-  padding:0.4rem 1.4rem;border-radius:20px;
+  padding:0.3rem 1rem;
+  border-radius:16px;
   backdrop-filter:blur(8px);
-  white-space:nowrap;
+  max-width:calc(100% - 4rem);
 }
 #info-banner .label-top{
-  font-size:0.6rem;letter-spacing:0.28em;
+  font-size:0.55rem;letter-spacing:0.24em;
   color:var(--miku1);text-transform:uppercase;
+  white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
 }
 #info-banner .song-name{
-  font-size:1rem;color:#fff;letter-spacing:0.1em;
+  font-size:0.85rem;color:#fff;letter-spacing:0.08em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:60vw;
 }
 
+/* ── Loading ── */
 #loading{
   position:fixed;inset:0;z-index:100;
   display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:1.2rem;
+  align-items:center;justify-content:center;gap:1rem;
   background:var(--bg);transition:opacity 0.6s;
 }
 #loading.hidden{opacity:0;pointer-events:none}
 .loader-ring{
-  width:56px;height:56px;
+  width:50px;height:50px;
   border:2.5px solid var(--surface);
   border-top-color:var(--miku2);
   border-right-color:var(--miku1);
@@ -204,8 +268,9 @@ body{
   animation:spin 0.75s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-#loading p{font-size:0.76rem;color:var(--muted);letter-spacing:0.22em}
+#loading p{font-size:0.72rem;color:var(--muted);letter-spacing:0.2em}
 
+/* ── Ripple ── */
 .ripple{
   position:fixed;border-radius:50%;
   border:1.5px solid var(--miku1);
@@ -213,17 +278,160 @@ body{
   animation:ripple-out 0.9s ease forwards;
 }
 @keyframes ripple-out{
-  from{width:8px;height:8px;opacity:0.8;transform:translate(-50%,-50%) scale(1)}
-  to{width:180px;height:180px;opacity:0;transform:translate(-50%,-50%) scale(1)}
+  from{width:6px;height:6px;opacity:0.8;transform:translate(-50%,-50%) scale(1)}
+  to{width:140px;height:140px;opacity:0;transform:translate(-50%,-50%) scale(1)}
 }
 
-/* Song themes */
+/* ── Song themes ── */
 .song-theme-0{--miku1:#39c5bb;--miku2:#0ff0e4;--miku3:#00fff7;--hair:#5ee7df}
 .song-theme-1{--miku1:#7c5cbf;--miku2:#b08fff;--miku3:#d4b4ff;--hair:#a07de0}
 .song-theme-2{--miku1:#e85d8a;--miku2:#ff8cb0;--miku3:#ffc2d8;--hair:#ff6a9a}
 .song-theme-3{--miku1:#f0a500;--miku2:#ffc84a;--miku3:#ffe399;--hair:#f5c046}
 .song-theme-4{--miku1:#3da8e0;--miku2:#7ecfff;--miku3:#b5e8ff;--hair:#5bbdff}
 .song-theme-5{--miku1:#e05050;--miku2:#ff8080;--miku3:#ffb8b8;--hair:#ff6666}
+
+/* ════════════════════════════════════════
+   TABLET  ≥ 600px
+════════════════════════════════════════ */
+@media(min-width:600px){
+  #bin-canvas{opacity:0.1}
+
+  #eq-wrap{height:52px;gap:3px}
+  .eq-bar{width:4px}
+
+  #lyric-wrap{
+    padding:5.5rem 2.5rem 7.5rem;
+    gap:1.1rem;
+  }
+  .lyric-line{
+    font-size:clamp(1.8rem,4.5vw,3rem);
+    letter-spacing:0.12em;
+  }
+  .lyric-line.prev,
+  .lyric-line.next{
+    font-size:clamp(1rem,2.5vw,1.7rem);
+  }
+
+  #beat-indicator{
+    top:1.5rem;right:1.8rem;
+    width:14px;height:14px;
+  }
+
+  #chord-badge{
+    bottom:5.8rem;
+    font-size:0.78rem;
+  }
+
+  #controls{
+    flex-direction:row;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:auto;
+    max-width:560px;
+    padding:0.65rem 1rem;
+    border-radius:30px;
+    bottom:1.2rem;
+    gap:0.6rem;
+  }
+  #btn-row{
+    width:auto;
+    flex:none;
+  }
+  .btn{
+    flex:none;
+    font-size:0.72rem;
+    padding:0.48rem 1.1rem;
+    min-height:36px;
+  }
+  #song-select{
+    width:auto;
+    max-width:240px;
+    font-size:0.72rem;
+    min-height:36px;
+  }
+
+  #info-banner{
+    top:1.2rem;
+    padding:0.35rem 1.2rem;
+    border-radius:18px;
+  }
+  #info-banner .label-top{font-size:0.58rem}
+  #info-banner .song-name{
+    font-size:0.95rem;
+    max-width:70vw;
+  }
+}
+
+/* ════════════════════════════════════════
+   DESKTOP  ≥ 1024px
+════════════════════════════════════════ */
+@media(min-width:1024px){
+  #bin-canvas{opacity:0.12}
+
+  #eq-wrap{height:60px;gap:3px}
+  .eq-bar{width:4px;opacity:0.5}
+
+  #lyric-wrap{
+    padding:6rem 4rem 8rem;
+    gap:1.4rem;
+  }
+  .lyric-line{
+    font-size:clamp(2rem,4vw,3.8rem);
+    letter-spacing:0.14em;
+    padding:0 2.5rem;
+  }
+  .lyric-line.prev,
+  .lyric-line.next{
+    font-size:clamp(1rem,2vw,1.9rem);
+  }
+
+  #beat-indicator{
+    top:2rem;right:2.5rem;
+    width:16px;height:16px;
+  }
+
+  #chord-badge{
+    bottom:6rem;
+    font-size:0.82rem;
+    letter-spacing:0.22em;
+  }
+
+  #controls{
+    flex-direction:row;
+    flex-wrap:nowrap;
+    width:auto;
+    max-width:none;
+    padding:0.7rem 1.4rem;
+    border-radius:40px;
+    bottom:1.6rem;
+    gap:0.9rem;
+  }
+  .btn{
+    font-size:0.72rem;
+    padding:0.48rem 1.2rem;
+    min-height:unset;
+  }
+  #song-select{
+    font-size:0.72rem;
+    max-width:260px;
+    min-height:unset;
+  }
+
+  #info-banner{
+    top:1.4rem;
+    padding:0.4rem 1.4rem;
+    border-radius:20px;
+  }
+  #info-banner .label-top{font-size:0.6rem;letter-spacing:0.28em}
+  #info-banner .song-name{
+    font-size:1rem;
+    max-width:none;
+  }
+
+  .char-unit.active{
+    transform:translateY(-5px) scale(1.15);
+  }
+}
 </style>
 </head>
 <body class="song-theme-0">
@@ -256,16 +464,18 @@ body{
 
 <div id="controls">
   <select id="song-select">
-    <option value="6W2N">こたえて / imie</option>
+    <option value="6W2N">こたえて / imie (Grand Prize)</option>
     <option value="zoqO">アフター・ザ・カーテン / Rulmry</option>
     <option value="PNpQ">シャッターチャンス / 夜未アガリ</option>
     <option value="B3yJ">世界最後の音楽隊 / 夏山よつぎ×ど～ぱみん</option>
     <option value="QBdL">トリツクロジー / 鶴三</option>
     <option value="E2i3">TAKEOVER / Twinfield</option>
   </select>
-  <button class="btn" id="btn-play">▶ PLAY</button>
-  <button class="btn" id="btn-pause">⏸ PAUSE</button>
-  <button class="btn" id="btn-stop">■ STOP</button>
+  <div id="btn-row">
+    <button class="btn" id="btn-play">▶ PLAY</button>
+    <button class="btn" id="btn-pause">⏸ PAUSE</button>
+    <button class="btn" id="btn-stop">■ STOP</button>
+  </div>
 </div>
 
 <div id="progress-bar"></div>
@@ -300,22 +510,33 @@ let phrases = [];
 let currentPhraseIdx = -1;
 let charMaps = [];
 
-// EQ bars
-const EQ_COUNT = 48;
-for(let i=0;i<EQ_COUNT;i++){
-  const b=document.createElement('div');
-  b.className='eq-bar';
-  $eqWrap.appendChild(b);
+// EQ bars — count scales with screen width
+function getEqCount(){
+  const w=window.innerWidth;
+  if(w>=1024)return 48;
+  if(w>=600)return 32;
+  return 20;
 }
-const eqBars=document.querySelectorAll('.eq-bar');
+function buildEqBars(){
+  $eqWrap.innerHTML='';
+  const n=getEqCount();
+  for(let i=0;i<n;i++){
+    const b=document.createElement('div');
+    b.className='eq-bar';
+    $eqWrap.appendChild(b);
+  }
+}
+buildEqBars();
+window.addEventListener('resize',buildEqBars);
+const eqBars=()=>document.querySelectorAll('.eq-bar');
 let eqAnim=null;
 function animateEq(){
-  eqBars.forEach(b=>{b.style.height=(4+Math.random()*46)+'px';});
+  eqBars().forEach(b=>{b.style.height=(4+Math.random()*46)+'px';});
   eqAnim=requestAnimationFrame(animateEq);
 }
 function stopEq(){
   if(eqAnim){cancelAnimationFrame(eqAnim);eqAnim=null;}
-  eqBars.forEach(b=>b.style.height='4px');
+  eqBars().forEach(b=>b.style.height='4px');
 }
 
 // Starfield
