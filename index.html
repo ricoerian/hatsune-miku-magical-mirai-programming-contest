@@ -13,7 +13,7 @@
 /* ════════════════════════════════════════
    THEME VARIABLES
    body.theme-sun   = Summer / Sunflower (default)
-   body.theme-cyber = Cyber / Miku
+   body.theme-star = star / Miku
 ════════════════════════════════════════ */
 body.theme-sun {
   --bg:#0d0800;
@@ -30,7 +30,7 @@ body.theme-sun {
   --banner-bg:rgba(13,8,0,0.65);
   --banner-border:rgba(245,200,0,0.2);
 }
-body.theme-cyber {
+body.theme-star {
   --bg:#03020a;
   --surface:#0d0b1e;
   --c1:#39c5bb;
@@ -65,7 +65,7 @@ body{
   transition:opacity 0.7s;
 }
 body.theme-sun  #bg-layer{background:radial-gradient(ellipse 80% 60% at 50% -10%, #ff9500 0%, #c65c00 25%, #3d1a00 60%, #0d0800 100%);}
-body.theme-cyber #bg-layer{background:radial-gradient(ellipse 60% 50% at 50% -5%, #0d2a4a 0%, #060418 55%, #03020a 100%);}
+body.theme-star #bg-layer{background:radial-gradient(ellipse 60% 50% at 50% -5%, #0d2a4a 0%, #060418 55%, #03020a 100%);}
 
 /* ── Sun elements ── */
 #sun-orb,#sun-rays{
@@ -90,7 +90,7 @@ body.theme-cyber #bg-layer{background:radial-gradient(ellipse 60% 50% at 50% -5%
   border-radius:50%;
 }
 @keyframes rays-spin{to{transform:translateX(-50%) rotate(360deg);}}
-body.theme-cyber #sun-orb,body.theme-cyber #sun-rays{opacity:0;}
+body.theme-star #sun-orb,body.theme-star #sun-rays{opacity:0;}
 body.theme-sun  #sun-orb,body.theme-sun  #sun-rays{opacity:1;}
 
 /* ── Canvases ── */
@@ -98,7 +98,7 @@ body.theme-sun  #sun-orb,body.theme-sun  #sun-rays{opacity:1;}
 #star-canvas  {position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity 0.7s;}
 #bin-canvas   {position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity 0.7s;}
 body.theme-sun  #petals-canvas{opacity:0.75;} body.theme-sun  #star-canvas{opacity:0;}   body.theme-sun  #bin-canvas{opacity:0.04;}
-body.theme-cyber #petals-canvas{opacity:0;}  body.theme-cyber #star-canvas{opacity:1;}  body.theme-cyber #bin-canvas{opacity:0.08;}
+body.theme-star #petals-canvas{opacity:0;}  body.theme-star #star-canvas{opacity:1;}  body.theme-star #bin-canvas{opacity:0.08;}
 
 /* ── EQ bars ── */
 #eq-wrap{position:fixed;bottom:0;left:0;right:0;height:44px;display:flex;align-items:flex-end;justify-content:center;gap:2px;z-index:2;pointer-events:none;}
@@ -125,7 +125,7 @@ body.theme-cyber #petals-canvas{opacity:0;}  body.theme-cyber #star-canvas{opaci
 .char-unit{display:inline-block;transition:color 0.06s,transform 0.12s,text-shadow 0.12s;}
 .char-unit.active{color:var(--c3);text-shadow:0 0 10px var(--c3),0 0 24px var(--accent),0 0 40px var(--c1);transform:translateY(-5px) scale(1.15);}
 body.theme-sun   .char-unit.passed{color:#e6a820;opacity:0.75;}
-body.theme-cyber .char-unit.passed{color:#5ee7df;opacity:0.7;}
+body.theme-star .char-unit.passed{color:#5ee7df;opacity:0.7;}
 
 /* ── Beat indicator ── */
 #beat-indicator{position:fixed;top:1rem;right:1rem;width:14px;height:14px;border-radius:50%;background:var(--c2);box-shadow:0 0 14px var(--c2),0 0 30px var(--accent);opacity:0;z-index:10;transition:opacity 0.05s;}
@@ -224,12 +224,12 @@ body.theme-sun.st-2{--c1:#ffab40;--c2:#ffca28;--c3:#fff9c4;--accent:#ff6d00}
 body.theme-sun.st-3{--c1:#ff8f00;--c2:#ffca28;--c3:#fff176;--accent:#e65100}
 body.theme-sun.st-4{--c1:#fdd835;--c2:#fff176;--c3:#fffde7;--accent:#f57f17}
 body.theme-sun.st-5{--c1:#ff6f00;--c2:#ffa000;--c3:#ffca28;--accent:#bf360c}
-body.theme-cyber.st-0{--c1:#39c5bb;--c2:#0ff0e4;--c3:#00fff7;--accent:#00e5ff}
-body.theme-cyber.st-1{--c1:#7c5cbf;--c2:#b08fff;--c3:#d4b4ff;--accent:#a855f7}
-body.theme-cyber.st-2{--c1:#e85d8a;--c2:#ff8cb0;--c3:#ffc2d8;--accent:#f43f8e}
-body.theme-cyber.st-3{--c1:#f0a500;--c2:#ffc84a;--c3:#ffe399;--accent:#f59e0b}
-body.theme-cyber.st-4{--c1:#3da8e0;--c2:#7ecfff;--c3:#b5e8ff;--accent:#0ea5e9}
-body.theme-cyber.st-5{--c1:#e05050;--c2:#ff8080;--c3:#ffb8b8;--accent:#ef4444}
+body.theme-star.st-0{--c1:#39c5bb;--c2:#0ff0e4;--c3:#00fff7;--accent:#00e5ff}
+body.theme-star.st-1{--c1:#7c5cbf;--c2:#b08fff;--c3:#d4b4ff;--accent:#a855f7}
+body.theme-star.st-2{--c1:#e85d8a;--c2:#ff8cb0;--c3:#ffc2d8;--accent:#f43f8e}
+body.theme-star.st-3{--c1:#f0a500;--c2:#ffc84a;--c3:#ffe399;--accent:#f59e0b}
+body.theme-star.st-4{--c1:#3da8e0;--c2:#7ecfff;--c3:#b5e8ff;--accent:#0ea5e9}
+body.theme-star.st-5{--c1:#e05050;--c2:#ff8080;--c3:#ffb8b8;--accent:#ef4444}
 
 /* ════ TABLET ≥ 600px ════ */
 @media(min-width:600px){
@@ -316,7 +316,7 @@ body.theme-cyber.st-5{--c1:#e05050;--c2:#ff8080;--c3:#ffb8b8;--accent:#ef4444}
     <!-- ☀️ / ⭐️ theme toggle pill -->
     <div id="theme-toggle" role="button" tabindex="0" aria-label="Toggle visual theme">
       <span class="t-opt active" data-theme="sun"><i class="fa-solid fa-sun"></i> SUN</span>
-      <span class="t-opt"        data-theme="star"><i class="fa-solid fa-star"></i> CYBER</span>
+      <span class="t-opt"        data-theme="star"><i class="fa-solid fa-star"></i> star</span>
     </div>
   </div>
 
@@ -367,7 +367,7 @@ function applyTheme(theme, st){
 }
 
 $toggle.addEventListener('click', ()=>{
-  applyTheme(currentTheme === 'sun' ? 'cyber' : 'sun', currentSt);
+  applyTheme(currentTheme === 'sun' ? 'star' : 'sun', currentSt);
 });
 $toggle.addEventListener('keydown', e=>{
   if(e.key==='Enter'||e.key===' '){e.preventDefault();$toggle.click();}
