@@ -1154,8 +1154,11 @@ function renderSongs(){
     card.dataset.key=key;
     card.innerHTML=`<img src="./star_miku.png" class="song-grid-img" draggable="false"><div class="song-grid-title">${title}</div><div class="song-grid-artist">${artist}</div>`;
     const selectSong=()=>{
-      if(player) player.requestStop();
-      loadSong(key);
+      userSelectedKey=key;
+      if(playerReady){
+        loadSong(key);
+      }
+      // if not yet ready, onAppReady will pick up userSelectedKey
       $songPanel.classList.remove('visible');
     };
     card.addEventListener('click',selectSong);
@@ -1379,6 +1382,10 @@ function buildCharMap(phrase){
 }
 
 let player=null,phrases=[],currentPhraseIdx=-1,charMaps=[];
+let userSelectedKey=null;   // set when user explicitly picks a song
+let playerReady=false;
+let isCreating=false;       // true while createFromSongUrl is in flight
+let pendingAfterCreate=null;// queued song key to load once current creation finishes
 let currentPhraseStart=0,currentPhraseEnd=0;
 
 function attachCharListeners(){
@@ -1430,7 +1437,7 @@ function initPlayer(){
   const{Player}=TextAliveApp;
   player=new Player({app:{token:"E96Wa5egutbj0ueY"},mediaElement:document.createElement('audio'),mediaBannerPosition:'top left'});
   player.addListener({
-    onAppReady(app){if(!app.managed)loadSong(Object.keys(SONGS)[0]);$loading.classList.add('hidden')},
+    onAppReady(app){playerReady=true;if(!app.managed&&userSelectedKey)loadSong(userSelectedKey);$loading.classList.add('hidden')},
     onVideoReady(v){phrases=[];charMaps=[];let p=v.firstPhrase;while(p){phrases.push(p);charMaps.push(buildCharMap(p));p=p.next}currentPhraseIdx=-1;$current.innerHTML='<i class="fa-solid fa-music"></i>';$prev.innerHTML='';$next.innerHTML=''},
     onTimerReady(){duration=player.video?.duration||0},
     onTimeUpdate(pos){
@@ -1455,12 +1462,28 @@ function initPlayer(){
 
 function loadSong(key){
   const song=SONGS[key];if(!song||!player)return;
+  // SDK doesn't allow parallel createFromSongUrl calls — queue if one is in flight
+  if(isCreating){
+    pendingAfterCreate=key;
+    applyTheme(currentTheme,song.st);
+    $songTitle.textContent=song.name;
+    return;
+  }
+  pendingAfterCreate=null;
   applyTheme(currentTheme,song.st);
   $songTitle.textContent=song.name;
   $loading.classList.remove('hidden');
-  player.createFromSongUrl(song.url,{video:song.video})
-    .then(()=>$loading.classList.add('hidden'))
-    .catch(err=>{console.error(err);$loading.classList.add('hidden')});
+  isCreating=true;
+  const finish=()=>{
+    isCreating=false;
+    $loading.classList.add('hidden');
+    if(pendingAfterCreate){
+      const nk=pendingAfterCreate;
+      pendingAfterCreate=null;
+      loadSong(nk);
+    }
+  };
+  player.createFromSongUrl(song.url,{video:song.video}).then(finish).catch(err=>{console.error(err);finish()});
 }
 
 document.getElementById('btn-play') .addEventListener('click',()=>player?.requestPlay());
