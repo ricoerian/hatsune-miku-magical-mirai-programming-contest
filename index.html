@@ -1152,7 +1152,7 @@ function renderSongs(){
     const card=document.createElement('div');
     card.className='song-grid-card';
     card.dataset.key=key;
-    card.innerHTML=`<img src="./star_miku.png" class="song-grid-img" draggable="false"><div class="song-grid-title">${title}</div><div class="song-grid-artist">${artist}</div>`;
+    card.innerHTML=`<img src="${MIKU_IMGS[currentTheme]}" class="song-grid-img" draggable="false"><div class="song-grid-title">${title}</div><div class="song-grid-artist">${artist}</div>`;
     const selectSong=()=>{
       userSelectedKey=key;
       if(playerReady){
@@ -1212,6 +1212,8 @@ function applyTheme(theme,st){
     $mikuImg.style.opacity='1';
     $mikuImg.style.transform='translateY(0) scale(1)';
   },220);
+  // update song card images to match new theme
+  document.querySelectorAll('.song-grid-img').forEach(img=>img.src=MIKU_IMGS[theme]);
 }
 $toggle.addEventListener('click',()=>applyTheme(currentTheme==='sun'?'star':'sun',currentSt));
 $toggle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$toggle.click()}});
