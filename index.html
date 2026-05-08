@@ -641,8 +641,8 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
 #btn-react-toggle:hover{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
 #btn-react-toggle.active{background:var(--c1);color:var(--text-inv)}
 
-/* ════ VOTE PANEL ════ */
-#vote-panel{
+/* ════ SONG SELECTION PANEL ════ */
+#song-panel{
   position:fixed;inset:0;z-index:200;
   display:flex;align-items:center;justify-content:center;
   background:rgba(0,0,0,.55);
@@ -651,38 +651,45 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   transition:opacity .4s;
   padding:1rem;
 }
-#vote-panel.visible{opacity:1;pointer-events:all}
-#vote-card{
+#song-panel.visible{opacity:1;pointer-events:all}
+#song-card{
   background:var(--ctrl-bg);
   border:1px solid var(--ctrl-border);
   border-radius:22px;padding:1.4rem 1.2rem;
-  max-width:min(400px,100%);width:100%;
+  max-width:min(600px,100%);width:100%;
   box-shadow:0 8px 40px var(--shadow-col);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
   max-height:85dvh;overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
-#vote-card h2{font-size:.72rem;letter-spacing:.2em;color:var(--c1);text-transform:uppercase;margin-bottom:.3rem;text-align:center}
-#vote-card p{font-size:.68rem;color:var(--muted);text-align:center;margin-bottom:.9rem;letter-spacing:.07em}
-.vote-row{
-  display:flex;align-items:center;gap:.5rem;
-  margin-bottom:.5rem;
+#song-card h2{font-size:.72rem;letter-spacing:.2em;color:var(--c1);text-transform:uppercase;margin-bottom:.3rem;text-align:center}
+#song-card p{font-size:.68rem;color:var(--muted);text-align:center;margin-bottom:.9rem;letter-spacing:.07em}
+
+#song-list{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-template-rows:repeat(2, 1fr);
+  gap:.6rem;
+  margin-bottom:.9rem;
+}
+.song-grid-card{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(128,128,128,.1);
+  border:1px solid var(--ctrl-border);
+  border-radius:12px;padding:.5rem;
   cursor:pointer;
-  padding:.3rem .45rem;border-radius:10px;
-  transition:background .15s;
+  transition:transform .15s, background .15s;
   touch-action:manipulation;
 }
-@media(hover:hover){.vote-row{cursor:none}}
-.vote-row:hover{background:var(--ctrl-border)}
-.vote-label{font-size:.6rem;letter-spacing:.05em;color:var(--text);min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vote-bar-wrap{flex:1;height:6px;background:rgba(128,128,128,.15);border-radius:4px;overflow:hidden}
-.vote-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--c1));transition:width .5s cubic-bezier(.22,1,.36,1)}
-.vote-pct{font-size:.58rem;color:var(--c1);min-width:26px;text-align:right;letter-spacing:.04em}
-.vote-voted{display:none;font-size:.5rem;color:var(--c1);margin-left:.15rem}
-.vote-row.my-vote .vote-voted{display:inline}
-#vote-close{
+@media(hover:hover){.song-grid-card{cursor:none}}
+.song-grid-card:hover{background:var(--ctrl-border);transform:translateY(-2px)}
+.song-grid-img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top;border-radius:8px;margin-bottom:.4rem}
+.song-grid-title{font-size:.65rem;color:var(--text);font-weight:bold;text-align:center;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.song-grid-artist{font-size:.55rem;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+#song-close{
   display:flex;align-items:center;justify-content:center;gap:.35rem;
-  margin-top:.9rem;width:100%;
+  width:100%;
   background:transparent;border:1.5px solid var(--c1);color:var(--c1);
   font-family:inherit;font-size:.63rem;letter-spacing:.1em;
   padding:.5rem;border-radius:12px;
@@ -690,11 +697,11 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   transition:background .2s,color .2s;
   touch-action:manipulation;min-height:44px;
 }
-@media(hover:hover){#vote-close{cursor:none}}
-#vote-close:hover{background:var(--c1);color:var(--text-inv)}
+@media(hover:hover){#song-close{cursor:none}}
+#song-close:hover{background:var(--c1);color:var(--text-inv)}
 
-/* ── Vote open btn ── */
-#btn-vote-open{
+/* ── Song open btn ── */
+#btn-song-open{
   position:fixed;
   left:clamp(.6rem,3vw,1rem);
   bottom:calc(env(safe-area-inset-bottom,0px) + 8.2rem);
@@ -708,8 +715,8 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   box-shadow:0 2px 10px var(--shadow-col);
   z-index:16;touch-action:manipulation;
 }
-@media(hover:hover){#btn-vote-open{cursor:none}}
-#btn-vote-open:hover{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
+@media(hover:hover){#btn-song-open{cursor:none}}
+#btn-song-open:hover{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
 
 /* ════ SIDE PANEL ════ */
 /* Hide on very small screens, show from 360px+ */
@@ -853,7 +860,7 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
 #art-credit {
   position:fixed;
   bottom:8px; right:12px;
-  font-size:14px;
+  font-size:11px;
   color:var(--text);
   z-index:20;
   pointer-events:none;
@@ -861,7 +868,7 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   transition:opacity .8s;
 }
 body.theme-sun #art-credit {
-  opacity:0.8;
+  opacity:0.6;
 }
 </style>
 </head>
@@ -911,16 +918,16 @@ body.theme-sun #art-credit {
 </div>
 <div id="btn-react-toggle" title="Reactions (R)"><i class="fa-solid fa-face-grin-stars"></i></div>
 
-<!-- Vote panel -->
-<div id="vote-panel">
-  <div id="vote-card">
-    <h2><i class="fa-solid fa-ranking-star"></i> &nbsp;VOTE YOUR FAVORITE</h2>
-    <p>Tap a song to cast your vote</p>
-    <div id="vote-list"></div>
-    <button id="vote-close"><i class="fa-solid fa-check"></i> &nbsp;DONE</button>
+<!-- Song Selection panel -->
+<div id="song-panel" class="visible">
+  <div id="song-card">
+    <h2><i class="fa-solid fa-music"></i> &nbsp;SELECT A SONG</h2>
+    <p>Choose a track to play</p>
+    <div id="song-list"></div>
+    <button id="song-close"><i class="fa-solid fa-xmark"></i> &nbsp;CANCEL</button>
   </div>
 </div>
-<div id="btn-vote-open" title="Vote (V)"><i class="fa-solid fa-ranking-star"></i></div>
+<div id="btn-song-open" title="Select Song (L)"><i class="fa-solid fa-list-ul"></i></div>
 
 <!-- Side panel -->
 <div id="hover-panel">
@@ -942,14 +949,7 @@ body.theme-sun #art-credit {
 
 <div id="controls">
   <div id="row-top">
-    <select id="song-select">
-      <option value="6W2N">こたえて / imie</option>
-      <option value="zoqO">アフター・ザ・カーテン / Rulmry</option>
-      <option value="PNpQ">シャッターチャンス / 夜未アガリ</option>
-      <option value="B3yJ">世界最後の音楽隊 / 夏山よつぎ×ど～ぱみん</option>
-      <option value="QBdL">トリツクロジー / 鶴三</option>
-      <option value="E2i3">TAKEOVER / Twinfield</option>
-    </select>
+
     <div id="theme-toggle" role="button" tabindex="0" aria-label="Toggle visual theme">
       <span class="t-opt active" data-theme="sun"><i class="fa-solid fa-sun"></i> SUN</span>
       <span class="t-opt"        data-theme="star"><i class="fa-solid fa-star"></i> STAR</span>
@@ -990,7 +990,6 @@ const $chord      = document.getElementById('chord-badge');
 const $progressBar= document.getElementById('progress-bar');
 const $progressTr = document.getElementById('progress-track');
 const $progressTh = document.getElementById('progress-thumb');
-const $songSel    = document.getElementById('song-select');
 const $eqWrap     = document.getElementById('eq-wrap');
 const $toggle     = document.getElementById('theme-toggle');
 const $phraseBar  = document.getElementById('phrase-bar-inner');
@@ -999,8 +998,8 @@ const $palette    = document.getElementById('palette-picker');
 const $cursor     = document.getElementById('cursor');
 const $cursorDot  = document.getElementById('cursor-dot');
 const $reactionBar= document.getElementById('reaction-bar');
-const $votePanel  = document.getElementById('vote-panel');
-const $voteList   = document.getElementById('vote-list');
+const $songPanel  = document.getElementById('song-panel');
+const $songList   = document.getElementById('song-list');
 const $mikuImg   =document.getElementById('miku-img');
 const $mikuWrap  =document.getElementById('miku-wrap');
 const $mikuPc    =document.getElementById('miku-particles');
@@ -1141,35 +1140,32 @@ document.getElementById('btn-react-toggle').addEventListener('click',()=>{
   document.getElementById('btn-react-toggle').classList.toggle('active',reactionOpen);
 });
 
-/* ════ VOTE ════ */
-const votes={};
-Object.keys(SONGS).forEach(k=>votes[k]=Math.floor(Math.random()*30)+5);
-let myVote=null;
-function getTotalVotes(){return Object.values(votes).reduce((a,b)=>a+b,0)}
-function renderVotes(){
-  $voteList.innerHTML='';
-  const total=getTotalVotes();
-  Object.entries(SONGS).forEach(([key,song])=>{
-    const pct=total>0?Math.round((votes[key]/total)*100):0;
-    const row=document.createElement('div');
-    row.className='vote-row'+(myVote===key?' my-vote':'');
-    row.dataset.key=key;
-    row.innerHTML=`<span class="vote-label">${song.name}</span><div class="vote-bar-wrap"><div class="vote-bar-fill" style="width:${pct}%"></div></div><span class="vote-pct">${pct}%</span><i class="fa-solid fa-check vote-voted"></i>`;
-    const cast=()=>{
-      if(myVote===key)return;
-      if(myVote)votes[myVote]=Math.max(0,votes[myVote]-1);
-      myVote=key;votes[key]++;
-      renderVotes();
-      showNotif('<i class="fa-solid fa-check"></i> &nbsp;VOTED!');
+/* ════ SONG SELECTION ════ */
+function renderSongs(){
+  $songList.innerHTML='';
+  Object.keys(SONGS).forEach(key=>{
+    const song=SONGS[key];
+    const parts=song.name.split(' / ');
+    const title=parts[0]||song.name;
+    const artist=parts[1]||'Unknown';
+    const card=document.createElement('div');
+    card.className='song-grid-card';
+    card.dataset.key=key;
+    card.innerHTML=`<img src="./star_miku.png" class="song-grid-img" draggable="false"><div class="song-grid-title">${title}</div><div class="song-grid-artist">${artist}</div>`;
+    const selectSong=()=>{
+      if(player) player.requestStop();
+      loadSong(key);
+      $songPanel.classList.remove('visible');
     };
-    row.addEventListener('click',cast);
-    row.addEventListener('touchend',e=>{e.preventDefault();cast();},{passive:false});
-    $voteList.appendChild(row);
+    card.addEventListener('click',selectSong);
+    card.addEventListener('touchend',e=>{e.preventDefault();selectSong();},{passive:false});
+    $songList.appendChild(card);
   });
 }
-document.getElementById('btn-vote-open').addEventListener('click',()=>{renderVotes();$votePanel.classList.add('visible')});
-document.getElementById('vote-close').addEventListener('click',()=>$votePanel.classList.remove('visible'));
-$votePanel.addEventListener('click',e=>{if(e.target===$votePanel)$votePanel.classList.remove('visible')});
+renderSongs();
+document.getElementById('btn-song-open').addEventListener('click',()=>$songPanel.classList.add('visible'));
+document.getElementById('song-close').addEventListener('click',()=>$songPanel.classList.remove('visible'));
+$songPanel.addEventListener('click',e=>{if(e.target===$songPanel)$songPanel.classList.remove('visible')});
 
 /* ════ NOTIFICATION ════ */
 function showNotif(html){
@@ -1325,7 +1321,7 @@ function handleTap(x,y){
     lastClickTime=now;
   }
 }
-const IGNORE_IDS=['controls','hover-panel','palette-picker','info-banner','reaction-bar','btn-react-toggle','vote-panel','btn-vote-open','btn-play','btn-pause','btn-stop','song-select','theme-toggle','progress-track','vote-close'];
+const IGNORE_IDS=['controls','hover-panel','palette-picker','info-banner','reaction-bar','btn-react-toggle','song-panel','btn-song-open','btn-play','btn-pause','btn-stop','theme-toggle','progress-track','song-close'];
 function isIgnored(el){return IGNORE_IDS.some(id=>el.closest('#'+id))}
 document.addEventListener('click',e=>{if(!isIgnored(e.target))handleTap(e.clientX,e.clientY)});
 /* Touch: tap on lyric area */
@@ -1433,9 +1429,9 @@ function initPlayer(){
   const{Player}=TextAliveApp;
   player=new Player({app:{token:"E96Wa5egutbj0ueY"},mediaElement:document.createElement('audio'),mediaBannerPosition:'top left'});
   player.addListener({
-    onAppReady(app){if(!app.managed)loadSong($songSel.value);$loading.classList.add('hidden')},
+    onAppReady(app){if(!app.managed)loadSong(Object.keys(SONGS)[0]);$loading.classList.add('hidden')},
     onVideoReady(v){phrases=[];charMaps=[];let p=v.firstPhrase;while(p){phrases.push(p);charMaps.push(buildCharMap(p));p=p.next}currentPhraseIdx=-1;$current.innerHTML='<i class="fa-solid fa-music"></i>';$prev.innerHTML='';$next.innerHTML=''},
-    onTimerReady(){$songTitle.textContent=SONGS[$songSel.value]?.name||'—';duration=player.video?.duration||0},
+    onTimerReady(){duration=player.video?.duration||0},
     onTimeUpdate(pos){
       if(!player.video)return;
       duration=player.video.duration||duration;
@@ -1469,7 +1465,6 @@ function loadSong(key){
 document.getElementById('btn-play') .addEventListener('click',()=>player?.requestPlay());
 document.getElementById('btn-pause').addEventListener('click',()=>player?.requestPause());
 document.getElementById('btn-stop') .addEventListener('click',()=>player?.requestStop());
-$songSel.addEventListener('change',()=>{player?.requestStop();loadSong($songSel.value)});
 
 /* ════ KEYBOARD ════ */
 document.addEventListener('keydown',e=>{
@@ -1484,7 +1479,7 @@ document.addEventListener('keydown',e=>{
     case'KeyB':    document.getElementById('btn-size').click();break;
     case'KeyC':    document.getElementById('btn-chorus').click();break;
     case'KeyR':    document.getElementById('btn-react-toggle').click();break;
-    case'KeyV':    document.getElementById('btn-vote-open').click();break;
+    case'KeyM':    document.getElementById('btn-song-open').click();break;
     case'ArrowRight':if(player&&duration){player.requestMediaSeek(Math.min(duration,(player.timer?.position||0)+5000));showNotif('<i class="fa-solid fa-forward"></i> &nbsp;+5s')}break;
     case'ArrowLeft': if(player&&duration){player.requestMediaSeek(Math.max(0,(player.timer?.position||0)-5000));showNotif('<i class="fa-solid fa-backward"></i> &nbsp;-5s')}break;
     default:if(e.code.startsWith('Digit')){const n=parseInt(e.key)-1;if(n>=0&&n<=5)applyTheme(currentTheme,n)}
