@@ -848,6 +848,21 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   .lyric-line.prev,.lyric-line.next{font-size:clamp(1rem,2vw,1.9rem)}
   #beat-indicator{margin-top:calc(env(safe-area-inset-top,0px) + 1.8rem);width:16px;height:16px}
 }
+
+/* ── Art Credit ── */
+#art-credit {
+  position:fixed;
+  bottom:8px; right:12px;
+  font-size:11px;
+  color:var(--text);
+  z-index:20;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .8s;
+}
+body.theme-sun #art-credit {
+  opacity:0.8;
+}
 </style>
 </head>
 <body class="theme-sun st-0">
@@ -869,6 +884,8 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
 </div>
 <!-- Miku particle canvas -->
 <canvas id="miku-particles"></canvas>
+
+<div id="art-credit">Art by wata</div>
 
 <div id="loading">
   <div class="loader-ring"></div>
