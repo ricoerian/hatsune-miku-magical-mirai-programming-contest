@@ -127,12 +127,12 @@ body.theme-star #petals-canvas{opacity:0}  body.theme-star #star-canvas{opacity:
   transform:translateX(8%);
 }
 
-/* Sun theme: hero_img.webp — push slightly right */
+/* Sun theme: sun_miku.webp — push slightly right */
 body.theme-sun  #miku-wrap{
   filter:drop-shadow(0 0 18px rgba(255,200,0,.25)) drop-shadow(0 0 40px rgba(255,140,0,.12));
   opacity:.88;
 }
-/* Star theme: img_illust_mikunt.png */
+/* Star theme: star_miku.png */
 body.theme-star #miku-wrap{
   filter:drop-shadow(0 0 20px rgba(57,197,187,.35)) drop-shadow(0 0 50px rgba(0,229,255,.18));
   opacity:.82;
@@ -437,7 +437,7 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
 
 <!-- ═══ MIKU CHARACTER ═══ -->
 <div id="miku-wrap">
-  <img id="miku-img" src="./hero_img.webp" alt="Hatsune Miku" draggable="false"/>
+  <img id="miku-img" src="./sun_miku.webp" alt="Hatsune Miku" draggable="false"/>
 </div>
 <!-- Miku particle canvas -->
 <canvas id="miku-particles"></canvas>
@@ -562,8 +562,8 @@ let chorusMode=false,reactionOpen=false,duration=0;
 
 /* ════ MIKU IMAGES ════ */
 const MIKU_IMGS = {
-  sun:  './hero_img.webp',
-  star: './img_illust_mikunt.png'
+  sun:  './sun_miku.webp',
+  star: './star_miku.png'
 };
 
 /* ════ MIKU PARTICLES ════ */
