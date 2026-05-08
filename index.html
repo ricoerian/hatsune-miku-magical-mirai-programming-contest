@@ -663,8 +663,8 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
   max-height:85dvh;overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
-#song-card h2{font-size:.72rem;letter-spacing:.2em;color:var(--c1);text-transform:uppercase;margin-bottom:.3rem;text-align:center}
-#song-card p{font-size:.68rem;color:var(--muted);text-align:center;margin-bottom:.9rem;letter-spacing:.07em}
+#song-card h2{font-size:.85rem;letter-spacing:.2em;color:var(--c1);text-transform:uppercase;margin-bottom:.3rem;text-align:center}
+#song-card p{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:.9rem;letter-spacing:.07em}
 
 #song-list{
   display:grid;
@@ -685,8 +685,25 @@ body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
 @media(hover:hover){.song-grid-card{cursor:none}}
 .song-grid-card:hover{background:var(--ctrl-border);transform:translateY(-2px)}
 .song-grid-img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top;border-radius:8px;margin-bottom:.4rem}
-.song-grid-title{font-size:.65rem;color:var(--text);font-weight:bold;text-align:center;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.song-grid-artist{font-size:.55rem;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.song-grid-title{font-size:.78rem;color:var(--text);font-weight:bold;text-align:center;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.song-grid-artist{font-size:.68rem;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Song panel — tablet */
+@media(min-width:600px){
+  #song-card h2{font-size:1rem;letter-spacing:.22em}
+  #song-card p{font-size:.82rem}
+  .song-grid-title{font-size:.92rem}
+  .song-grid-artist{font-size:.76rem}
+  #song-close{font-size:.78rem}
+}
+/* Song panel — desktop */
+@media(min-width:1024px){
+  #song-card h2{font-size:1.1rem;letter-spacing:.24em}
+  #song-card p{font-size:.88rem}
+  .song-grid-title{font-size:1rem;letter-spacing:.02em}
+  .song-grid-artist{font-size:.82rem}
+  #song-close{font-size:.84rem}
+}
 
 #song-close{
   display:flex;align-items:center;justify-content:center;gap:.35rem;
