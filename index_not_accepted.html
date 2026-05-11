@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Magical Mirai 2026 · Lyric App · Rico Eriansyah</title>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/textalive-app-api/dist/index.js"></script>
+<link rel="apple-touch-icon" href="./touch-icon.png" sizes="180x180">
+<link rel="icon" type="image/png" href="./touch-icon.png" sizes="192x192">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+
+/* ════════════════════════════════════════
+   THEME VARIABLES
+════════════════════════════════════════ */
+body.theme-sun {
+  --bg:#ffffff; --surface:#f5f0e8;
+  --c1:#e8a000; --c2:#f5c800; --c3:#ff9500; --accent:#ff6d00;
+  --text:#1a0e00; --text-lyric:#1a0e00; --text-inv:#ffffff; --muted:#b89060;
+  --ctrl-bg:rgba(255,255,255,0.9); --ctrl-border:rgba(232,160,0,0.35);
+  --select-bg:rgba(245,240,232,0.97); --banner-bg:rgba(255,255,255,0.9);
+  --banner-border:rgba(232,160,0,0.3); --shadow-col:rgba(232,160,0,0.18);
+  --char-active:#ff6d00; --char-passed:#c98a20; --char-default:#1a0e00;
+  --pulse-col:rgba(255,180,0,0.08);
+  --miku-opacity:0.18;
+  --miku-blend:normal;
+  --particle-col1:rgba(255,200,0,0.7);
+  --particle-col2:rgba(255,140,0,0.6);
+  --particle-col3:rgba(255,230,100,0.5);
+}
+body.theme-star {
+  --bg:#000000; --surface:#080812;
+  --c1:#39c5bb; --c2:#0ff0e4; --c3:#00fff7; --accent:#00e5ff;
+  --text:#e8e0ff; --text-lyric:#e8e0ff; --text-inv:#000000; --muted:#3a4a5a;
+  --ctrl-bg:rgba(0,0,0,0.88); --ctrl-border:rgba(57,197,187,0.25);
+  --select-bg:rgba(8,8,18,0.95); --banner-bg:rgba(0,0,0,0.8);
+  --banner-border:rgba(57,197,187,0.2); --shadow-col:rgba(57,197,187,0.15);
+  --char-active:#00fff7; --char-passed:#5ee7df; --char-default:#e8e0ff;
+  --pulse-col:rgba(57,197,187,0.07);
+  --miku-opacity:0.22;
+  --miku-blend:screen;
+  --particle-col1:rgba(57,197,187,0.7);
+  --particle-col2:rgba(0,255,247,0.5);
+  --particle-col3:rgba(170,240,255,0.4);
+}
+
+/* per-song color overrides */
+body.theme-sun.st-0{--c1:#e8a000;--c2:#f5c800;--c3:#ff9500;--accent:#ff6d00;--char-active:#ff6d00;--char-passed:#c98a20}
+body.theme-sun.st-1{--c1:#d4880a;--c2:#f0a830;--c3:#ffe0a0;--accent:#b85c00;--char-active:#b85c00;--char-passed:#c98a20}
+body.theme-sun.st-2{--c1:#e06000;--c2:#ff8c30;--c3:#ffc080;--accent:#c04000;--char-active:#c04000;--char-passed:#d07030}
+body.theme-sun.st-3{--c1:#c07a00;--c2:#e0a020;--c3:#f0c060;--accent:#9a5500;--char-active:#9a5500;--char-passed:#b07020}
+body.theme-sun.st-4{--c1:#e0b800;--c2:#f5d800;--c3:#fff080;--accent:#d08000;--char-active:#d08000;--char-passed:#b89040}
+body.theme-sun.st-5{--c1:#c85000;--c2:#e87020;--c3:#ffa060;--accent:#a03000;--char-active:#a03000;--char-passed:#c06020}
+body.theme-star.st-0{--c1:#39c5bb;--c2:#0ff0e4;--c3:#00fff7;--accent:#00e5ff;--char-active:#00fff7;--char-passed:#5ee7df}
+body.theme-star.st-1{--c1:#7c5cbf;--c2:#b08fff;--c3:#d4b4ff;--accent:#a855f7;--char-active:#d4b4ff;--char-passed:#9070d0}
+body.theme-star.st-2{--c1:#e85d8a;--c2:#ff8cb0;--c3:#ffc2d8;--accent:#f43f8e;--char-active:#ffc2d8;--char-passed:#d06090}
+body.theme-star.st-3{--c1:#f0a500;--c2:#ffc84a;--c3:#ffe399;--accent:#f59e0b;--char-active:#ffe399;--char-passed:#d09030}
+body.theme-star.st-4{--c1:#3da8e0;--c2:#7ecfff;--c3:#b5e8ff;--accent:#0ea5e9;--char-active:#b5e8ff;--char-passed:#5090c0}
+body.theme-star.st-5{--c1:#e05050;--c2:#ff8080;--c3:#ffb8b8;--accent:#ef4444;--char-active:#ffb8b8;--char-passed:#c06060}
+
+/* ── Reset & base ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Zen Kurenaido','Noto Serif JP',serif;
+  background:var(--bg);color:var(--text);
+  width:100%;height:100%;min-height:100dvh;
+  overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;
+  transition:background .7s,color .5s;
+  /* custom cursor only on non-touch */
+  cursor:default;
+}
+@media(hover:hover){body{cursor:none}}
+
+/* ── Custom cursor (non-touch only) ── */
+#cursor,#cursor-dot{display:none}
+@media(hover:hover){
+  #cursor{
+    display:block;position:fixed;pointer-events:none;z-index:9999;
+    width:18px;height:18px;border:2px solid var(--c1);border-radius:50%;
+    transform:translate(-50%,-50%);
+    transition:border-color .3s,width .15s,height .15s;
+    mix-blend-mode:difference;
+  }
+  #cursor.clicking{width:10px;height:10px}
+  #cursor-dot{
+    display:block;position:fixed;pointer-events:none;z-index:9999;
+    width:4px;height:4px;background:var(--c1);border-radius:50%;
+    transform:translate(-50%,-50%);transition:background .3s;
+  }
+  body{cursor:none}
+}
+
+/* ── Mouse trail ── */
+.trail-icon{
+  position:fixed;pointer-events:none;z-index:9990;
+  font-size:.6rem;color:var(--c1);opacity:0;
+  transform:translate(-50%,-50%);
+  animation:trail-fade .7s ease forwards;
+  filter:drop-shadow(0 0 3px var(--accent));
+}
+@keyframes trail-fade{
+  0%{opacity:.8;transform:translate(-50%,-50%) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-120%) scale(.3)}
+}
+
+/* ════ BACKGROUND LAYERS ════ */
+#bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;transition:opacity .8s}
+body.theme-sun  #bg-layer{background:radial-gradient(ellipse 70% 55% at 50% -5%,rgba(255,200,50,.15) 0%,rgba(255,140,0,.06) 40%,transparent 70%),radial-gradient(ellipse 100% 40% at 50% 110%,rgba(255,160,0,.05) 0%,transparent 60%)}
+body.theme-star #bg-layer{background:radial-gradient(ellipse 60% 50% at 50% -5%,rgba(30,80,120,.35) 0%,rgba(10,20,60,.2) 50%,transparent 75%),radial-gradient(ellipse 80% 30% at 80% 80%,rgba(57,197,187,.08) 0%,transparent 60%)}
+
+#beat-pulse{position:fixed;inset:0;z-index:2;pointer-events:none;background:var(--pulse-col);opacity:0;transition:opacity .05s}
+#beat-pulse.on{opacity:1}
+
+/* ── Sun orb ── */
+#sun-orb,#sun-rays{
+  position:fixed;top:-90px;left:50%;
+  transform:translateX(-50%);
+  width:min(240px,80vw);height:min(240px,80vw);
+  pointer-events:none;z-index:1;transition:opacity .8s;
+}
+#sun-orb{
+  border-radius:50%;
+  background:radial-gradient(circle,#fff7cc 0%,#ffe033 35%,#ff9500 65%,transparent 100%);
+  box-shadow:0 0 80px 30px rgba(255,180,0,.3),0 0 160px 60px rgba(255,140,0,.12);
+  animation:sun-breathe 4s ease-in-out infinite;
+}
+@keyframes sun-breathe{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
+#sun-rays{animation:rays-spin 20s linear infinite}
+#sun-rays::before{
+  content:'';position:absolute;top:50%;left:50%;
+  width:700px;height:700px;transform:translate(-50%,-50%);
+  background:repeating-conic-gradient(from 0deg,rgba(245,200,0,.04) 0deg 12deg,transparent 12deg 24deg);
+  border-radius:50%;
+}
+@keyframes rays-spin{to{transform:translateX(-50%) rotate(360deg)}}
+body.theme-star #sun-orb,body.theme-star #sun-rays{opacity:0}
+body.theme-sun  #sun-orb,body.theme-sun  #sun-rays{opacity:1}
+
+/* ── Canvases ── */
+#petals-canvas,#star-canvas,#bin-canvas{position:fixed;inset:0;z-index:1;pointer-events:none;transition:opacity .7s}
+body.theme-sun  #petals-canvas{opacity:.6} body.theme-sun  #star-canvas{opacity:0}  body.theme-sun  #bin-canvas{opacity:.03}
+body.theme-star #petals-canvas{opacity:0}  body.theme-star #star-canvas{opacity:1}  body.theme-star #bin-canvas{opacity:.07}
+
+/* ════════════════════════════════════════
+   MIKU CHARACTER — THEME-AWARE
+════════════════════════════════════════ */
+#miku-wrap{
+  position:fixed;
+  bottom:0;
+  /* right side, above controls */
+  right:clamp(-2rem, -2vw, 0px);
+  z-index:2;
+  pointer-events:none;
+  display:flex;align-items:flex-end;
+  /* height: up to 75% of viewport, won't cover lyrics */
+  height:min(75dvh, 520px);
+  width:auto;
+  transition:opacity .8s cubic-bezier(.22,1,.36,1), transform 1s cubic-bezier(.22,1,.36,1), filter .8s;
+  /* offset right on small screens so it doesn't obscure center */
+  transform:translateX(8%);
+}
+
+/* Sun theme: sun_miku.webp — push slightly right */
+body.theme-sun  #miku-wrap{
+  filter:drop-shadow(0 0 18px rgba(255,200,0,.25)) drop-shadow(0 0 40px rgba(255,140,0,.12));
+  opacity:.88;
+}
+/* Star theme: star_miku.png */
+body.theme-star #miku-wrap{
+  filter:drop-shadow(0 0 20px rgba(57,197,187,.35)) drop-shadow(0 0 50px rgba(0,229,255,.18));
+  opacity:.82;
+}
+
+#miku-img{
+  height:100%;
+  width:auto;
+  object-fit:contain;
+  object-position:bottom center;
+  display:block;
+  transition:opacity .7s, transform .7s;
+}
+
+/* entrance animation */
+@keyframes miku-enter{
+  from{opacity:0;transform:translateY(30px) scale(.95)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+#miku-img{animation:miku-enter 1.2s cubic-bezier(.22,1,.36,1) both}
+
+/* breathing idle */
+@keyframes miku-breathe{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-6px) scale(1.008)}
+}
+#miku-img{animation:miku-enter 1.2s cubic-bezier(.22,1,.36,1) both, miku-breathe 5s ease-in-out 1.2s infinite}
+
+/* beat pulse: triggered by JS class */
+#miku-img.on-beat{
+  animation:miku-enter 1.2s cubic-bezier(.22,1,.36,1) both,
+            miku-breathe 5s ease-in-out 1.2s infinite,
+            miku-beat .18s ease;
+}
+@keyframes miku-beat{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.025) translateY(-4px)}
+  100%{transform:scale(1)}
+}
+
+/* hide on very small narrow screens in landscape to avoid covering lyrics */
+@media(max-width:380px) and (max-height:480px){#miku-wrap{display:none}}
+
+/* Responsive sizing */
+@media(min-width:600px){
+  #miku-wrap{height:min(78dvh,580px);right:clamp(-1rem,0vw,0px);transform:translateX(4%)}
+}
+@media(min-width:1024px){
+  #miku-wrap{height:min(82dvh,680px);right:0;transform:translateX(0)}
+}
+
+/* ════ MIKU PARTICLES CANVAS ════ */
+#miku-particles{
+  position:fixed;
+  bottom:0;right:0;
+  width:min(55vw, 420px);
+  height:min(85dvh, 600px);
+  pointer-events:none;
+  z-index:3;
+  transition:opacity .7s;
+}
+body.theme-sun  #miku-particles{opacity:.75}
+body.theme-star #miku-particles{opacity:.85}
+
+/* ── EQ bars ── */
+#eq-wrap{
+  position:fixed;bottom:0;left:0;right:0;
+  height:clamp(32px,5vw,52px);
+  display:flex;align-items:flex-end;justify-content:center;
+  gap:2px;z-index:2;pointer-events:none;
+}
+.eq-bar{width:clamp(2px,0.6vw,4px);border-radius:2px 2px 0 0;background:linear-gradient(to top,var(--accent),var(--c2));height:3px;transition:height .09s}
+body.theme-sun  .eq-bar{opacity:.3}
+body.theme-star .eq-bar{opacity:.5}
+
+/* ════ STAGE & LYRIC WRAP ════ */
+#stage{
+  position:relative;z-index:3;
+  width:100vw;height:100dvh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+
+#lyric-wrap{
+  position:absolute;
+  /* Mobile: more breathing room from top info banner + bottom controls */
+  top:0;left:0;right:0;bottom:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+  gap:clamp(.5rem,2vw,.9rem);
+  /* safe area insets for notch devices */
+  padding:
+    calc(env(safe-area-inset-top,0px) + 4.5rem)
+    clamp(.75rem,4vw,2.5rem)
+    calc(env(safe-area-inset-bottom,0px) + 8rem)
+    clamp(.75rem,4vw,2.5rem);
+  transition:transform .4s cubic-bezier(.22,1,.36,1);
+  /* nudge lyrics left so they share space with Miku on wide screens */
+}
+@media(min-width:700px){
+  #lyric-wrap{padding-right:clamp(35%,40vw,48%)}
+}
+
+/* ── Lyric lines ── */
+/* Mobile first — then scale up */
+.lyric-line{
+  font-size:clamp(1.4rem,6.5vw,2.4rem);
+  font-weight:700;letter-spacing:.08em;
+  text-align:center;width:100%;
+  transition:opacity .4s,transform .4s,font-size .5s;
+  line-height:1.5;word-break:break-word;overflow-wrap:break-word;
+  hyphens:auto;
+  color:var(--text-lyric);
+}
+.lyric-line.current{animation:line-in .45s cubic-bezier(.22,1,.36,1)}
+body.chorus-mode .lyric-line.current{font-size:clamp(1.75rem,8vw,3.2rem)}
+@keyframes line-in{
+  0%{opacity:0;transform:translateY(18px) scale(.91)}
+  60%{opacity:1;transform:translateY(-4px) scale(1.03)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+.lyric-line.prev{
+  color:var(--muted);opacity:.38;
+  font-size:clamp(.8rem,3.5vw,1.3rem);
+  transform:translateY(-.25em) scale(.84);
+  animation:line-prev .35s ease;
+}
+@keyframes line-prev{0%{opacity:.8;transform:translateY(0) scale(1)}100%{opacity:.38;transform:translateY(-.25em) scale(.84)}}
+.lyric-line.next{
+  color:var(--muted);opacity:.38;
+  font-size:clamp(.8rem,3.5vw,1.3rem);
+  transform:translateY(.25em) scale(.84);
+  animation:line-next .35s ease;
+}
+@keyframes line-next{0%{opacity:.15;transform:translateY(.5em) scale(.78)}100%{opacity:.38;transform:translateY(.25em) scale(.84)}}
+
+/* ── Char units ── */
+.char-unit{
+  display:inline-block;color:var(--char-default);
+  transition:color .06s,transform .12s,opacity .12s;
+  position:relative;will-change:transform;
+}
+/* hover only on non-touch */
+@media(hover:hover){
+  .char-unit{cursor:none;pointer-events:all}
+  .char-unit:hover{
+    color:var(--accent);
+    transform:translateY(-8px) scale(1.28) rotate(-4deg);
+    transition:transform .18s cubic-bezier(.22,1,.36,1),color .1s;
+    z-index:2;
+  }
+}
+/* touch: allow tap events */
+@media(hover:none){
+  .char-unit{pointer-events:all;touch-action:manipulation}
+}
+.char-unit.active{
+  color:var(--char-active);
+  transform:translateY(-5px) scale(1.15);
+  animation:char-pop .22s cubic-bezier(.22,1,.36,1);
+}
+body.theme-sun  .char-unit.active{text-shadow:0 0 6px rgba(255,140,0,.55),0 1px 8px rgba(255,160,0,.3)}
+body.theme-star .char-unit.active{text-shadow:0 0 7px var(--c3),0 0 14px var(--accent)}
+@keyframes char-pop{0%{transform:translateY(0) scale(.88)}50%{transform:translateY(-9px) scale(1.28)}100%{transform:translateY(-5px) scale(1.15)}}
+body.theme-sun  .char-unit.passed{color:var(--char-passed);opacity:.68}
+body.theme-star .char-unit.passed{color:var(--char-passed);opacity:.62}
+
+.char-unit.word-glow{animation:word-glow-anim .7s ease}
+@keyframes word-glow-anim{
+  0%{color:var(--char-active);transform:translateY(-6px) scale(1.2)}
+  50%{color:var(--c2);transform:translateY(-10px) scale(1.32)}
+  100%{color:var(--char-active)}
+}
+@keyframes char-burst{
+  0%{transform:translateY(-5px) scale(1.15) rotate(0deg)}
+  30%{transform:translateY(-20px) scale(1.55) rotate(6deg)}
+  100%{transform:translateY(-5px) scale(1.15) rotate(0deg)}
+}
+.char-unit.burst{animation:char-burst .45s cubic-bezier(.22,1,.36,1)}
+
+/* ── Floating icon particles ── */
+.float-icon{
+  position:fixed;pointer-events:none;z-index:9980;
+  display:flex;align-items:center;justify-content:center;
+  animation:float-up 1.3s cubic-bezier(.22,1,.36,1) forwards;
+}
+@keyframes float-up{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0deg)}
+  40%{opacity:1;transform:translate(-50%,-120%) scale(1.35) rotate(14deg)}
+  80%{opacity:.4}
+  100%{opacity:0;transform:translate(-50%,-200%) scale(.4) rotate(35deg)}
+}
+
+/* ── Burst ring ── */
+.burst-ring{
+  position:fixed;pointer-events:none;z-index:4;
+  border-radius:50%;border:2px solid var(--c1);
+  width:20px;height:20px;left:50%;top:50%;
+  animation:ring-out .7s ease forwards;
+}
+@keyframes ring-out{
+  from{opacity:.7;transform:translate(-50%,-50%) scale(.5)}
+  to{opacity:0;transform:translate(-50%,-50%) scale(4)}
+}
+
+/* ── Beat indicator ── */
+#beat-indicator{
+  position:fixed;top:env(safe-area-inset-top,0px);
+  /* bump below safe area */
+  margin-top:calc(env(safe-area-inset-top,0px) + .7rem);
+  right:clamp(.75rem,3vw,1.5rem);
+  width:12px;height:12px;border-radius:50%;
+  background:var(--c2);box-shadow:0 0 14px var(--c2),0 0 30px var(--accent);
+  opacity:0;z-index:10;transition:opacity .05s;
+}
+#beat-indicator.on{opacity:1}
+
+/* ── Chord badge ── */
+#chord-badge{
+  position:fixed;
+  bottom:calc(env(safe-area-inset-bottom,0px) + 6rem);
+  left:50%;
+  font-size:.7rem;letter-spacing:.18em;
+  color:var(--c1);opacity:0;
+  transition:opacity .25s,transform .25s;
+  z-index:10;
+  padding:.2rem .8rem;border-radius:20px;
+  border:1px solid var(--ctrl-border);
+  background:var(--ctrl-bg);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  white-space:nowrap;
+  transform:translateX(-50%) scale(.9);
+}
+#chord-badge.visible{opacity:1;transform:translateX(-50%) scale(1)}
+
+/* ── Phrase micro-bar ── */
+#phrase-bar-wrap{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 5.2rem);
+  width:min(280px,55vw);height:2px;
+  background:var(--ctrl-border);border-radius:2px;
+  z-index:10;opacity:0;transition:opacity .3s;
+}
+#phrase-bar-wrap.visible{opacity:.65}
+#phrase-bar-inner{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--c1),var(--c3));width:0%;transition:width .1s linear}
+
+/* ════════════════════════════════════════
+   THEME TOGGLE
+════════════════════════════════════════ */
+#theme-toggle{
+  width:100%;
+  position:relative;display:flex;align-items:center;
+  background:var(--ctrl-bg);border:1.5px solid var(--c1);
+  border-radius:30px;padding:3px;
+  cursor:pointer;
+  z-index:25;
+  transition:border-color .5s,background .5s,box-shadow .3s;
+  min-width:100px;height:38px;flex-shrink:0;user-select:none;
+  box-shadow:0 2px 12px var(--shadow-col);
+  touch-action:manipulation;
+}
+@media(hover:hover){#theme-toggle{cursor:none}}
+#theme-toggle:hover{box-shadow:0 4px 20px var(--shadow-col),0 0 0 2px var(--c1)}
+#theme-toggle .t-opt{
+  flex:1;text-align:center;font-family:inherit;
+  font-size:.58rem;letter-spacing:.06em;
+  padding:.25rem .35rem;border-radius:26px;color:var(--muted);
+  transition:color .3s,background .3s,box-shadow .3s;
+  white-space:nowrap;line-height:1.3;
+  pointer-events:none;
+}
+#theme-toggle .t-opt.active{color:var(--text-inv);background:var(--c1);box-shadow:0 0 14px var(--c1);font-weight:700}
+#theme-toggle .t-opt i{font-size:.72rem}
+
+/* ════════════════════════════════════════
+   CONTROLS — MOBILE FIRST
+════════════════════════════════════════ */
+#controls{
+  position:fixed;
+  bottom:calc(env(safe-area-inset-bottom,0px) + .6rem);
+  left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;
+  gap:.4rem;
+  z-index:20;
+  width:calc(100% - 1.2rem);
+  max-width:480px;
+  background:var(--ctrl-bg);
+  border:1px solid var(--ctrl-border);
+  padding:.55rem .7rem;
+  border-radius:18px;
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  transition:background .5s,border-color .5s;
+  box-shadow:0 4px 30px var(--shadow-col);
+}
+#row-top{display:flex;gap:.45rem;width:100%;align-items:center}
+#btn-row{display:flex;gap:.45rem;width:100%}
+
+.btn{
+  background:transparent;border:1.5px solid var(--c1);color:var(--c1);
+  font-family:inherit;font-size:.65rem;letter-spacing:.1em;
+  padding:.4rem .6rem;
+  border-radius:14px;
+  transition:background .2s,color .2s,box-shadow .2s,transform .1s;
+  flex:1;min-height:40px;
+  touch-action:manipulation;
+  cursor:pointer;
+}
+@media(hover:hover){.btn{cursor:none}}
+.btn:hover,.btn:focus{background:var(--c1);color:var(--text-inv);box-shadow:0 0 18px var(--c1);outline:none;transform:translateY(-1px)}
+.btn:active{transform:scale(.94)}
+.btn i{font-size:.78rem;pointer-events:none}
+
+#song-select{
+  width: 50%;
+  flex:1;
+  background:var(--select-bg);border:1px solid var(--ctrl-border);
+  color:var(--text);font-family:inherit;
+  padding:.4rem .6rem;border-radius:14px;
+  min-height:40px;font-size:max(16px,.75rem);/* prevent iOS zoom */
+  transition:background .5s,border-color .5s;
+  cursor:pointer;
+  appearance:auto;
+  -webkit-appearance:auto;
+}
+
+/* ── Tablet ≥ 600px ── */
+@media(min-width:600px){
+  #controls{
+    flex-direction:row;flex-wrap:wrap;justify-content:center;
+    width:auto;max-width:560px;
+    padding:.6rem 1rem;border-radius:28px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 1rem);
+    gap:.55rem;
+  }
+  #row-top,#btn-row{width:auto;flex:none}
+  .btn{flex:none;font-size:.7rem;padding:.45rem 1rem;min-height:36px}
+  #song-select{flex:none;width:auto;min-width:160px;max-width:200px;font-size:.7rem;min-height:36px}
+  #theme-toggle{height:36px;min-width:110px}
+}
+
+/* ── Desktop ≥ 1024px ── */
+@media(min-width:1024px){
+  #controls{
+    flex-direction:row;flex-wrap:nowrap;
+    max-width:none;padding:.65rem 1.4rem;
+    border-radius:40px;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 1.4rem);
+    gap:.85rem;
+  }
+  .btn{font-size:.72rem;padding:.48rem 1.1rem}
+  #song-select{min-width:200px;max-width:240px;font-size:.72rem}
+}
+
+/* ════ PROGRESS BAR ════ */
+#progress-track{
+  position:fixed;bottom:0;left:0;right:0;
+  height:5px;
+  background:rgba(128,128,128,.12);
+  z-index:30;
+  cursor:pointer;
+  transition:height .2s;
+}
+@media(hover:hover){#progress-track{cursor:none}}
+#progress-track:hover{height:8px}
+#progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--c1),var(--c3));
+  width:0%;transition:width .25s linear;
+  box-shadow:0 0 8px var(--c2);
+  pointer-events:none;
+}
+#progress-thumb{
+  position:absolute;right:calc(100% - var(--pct,0%));top:50%;
+  width:14px;height:14px;border-radius:50%;background:var(--c1);
+  transform:translate(50%,-50%) scale(0);
+  transition:transform .15s;pointer-events:none;
+  box-shadow:0 0 8px var(--c1);
+}
+#progress-track:hover #progress-thumb{transform:translate(50%,-50%) scale(1)}
+/* on touch always show thumb */
+@media(hover:none){#progress-thumb{transform:translate(50%,-50%) scale(0.85)}}
+
+/* ════ INFO BANNER ════ */
+#info-banner{
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0px) + .6rem);
+  left:50%;transform:translateX(-50%);
+  text-align:center;z-index:10;
+  background:var(--banner-bg);border:1px solid var(--banner-border);
+  padding:.28rem .9rem;border-radius:14px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  max-width:calc(100% - 3.5rem);
+  transition:background .5s,border-color .5s;
+  box-shadow:0 2px 16px var(--shadow-col);
+}
+#info-banner .label-top{
+  font-size:.5rem;letter-spacing:.22em;color:var(--c1);
+  text-transform:uppercase;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+  transition:color .5s;
+}
+#info-banner .song-name{
+  font-size:.8rem;color:var(--text);letter-spacing:.07em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:55vw;
+}
+@media(min-width:600px){
+  #info-banner{top:calc(env(safe-area-inset-top,0px) + 1rem);padding:.3rem 1.1rem}
+  #info-banner .label-top{font-size:.54rem;letter-spacing:.25em}
+  #info-banner .song-name{font-size:.88rem;max-width:70vw}
+}
+@media(min-width:1024px){
+  #info-banner{top:calc(env(safe-area-inset-top,0px) + 1.3rem);padding:.38rem 1.3rem;border-radius:18px}
+  #info-banner .label-top{font-size:.58rem;letter-spacing:.28em}
+  #info-banner .song-name{font-size:.98rem;max-width:none}
+}
+
+/* ════ REACTION BAR ════ */
+#reaction-bar{
+  position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 7.5rem);
+  display:flex;gap:.4rem;align-items:center;
+  z-index:15;
+  opacity:0;pointer-events:none;
+  transition:opacity .4s,transform .4s;
+  transform:translateX(-50%) translateY(8px);
+}
+#reaction-bar.visible{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+@media(min-width:600px){
+  #reaction-bar{bottom:calc(env(safe-area-inset-bottom,0px) + 7rem)}
+}
+
+.react-btn{
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  background:var(--ctrl-bg);border:1px solid var(--ctrl-border);
+  padding:.4rem .6rem;border-radius:14px;
+  cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  min-width:44px;min-height:44px;/* accessible tap target */
+  touch-action:manipulation;
+}
+@media(hover:hover){.react-btn{cursor:none}}
+.react-btn:hover{background:var(--c1);transform:translateY(-4px) scale(1.08);box-shadow:0 0 20px var(--c1)}
+.react-btn:hover .react-icon,.react-btn:hover .react-count{color:var(--text-inv)}
+.react-btn.popped{animation:react-pop .35s cubic-bezier(.22,1,.36,1)}
+@keyframes react-pop{0%{transform:scale(1)}40%{transform:translateY(-8px) scale(1.25)}100%{transform:scale(1)}}
+.react-icon{font-size:.9rem;color:var(--c1);transition:color .2s}
+.react-count{font-size:.56rem;letter-spacing:.06em;color:var(--muted);font-family:inherit;transition:color .2s;min-width:18px;text-align:center}
+
+/* ── Reaction toggle ── */
+#btn-react-toggle{
+  position:fixed;
+  right:clamp(.6rem,3vw,1rem);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 8.2rem);
+  width:42px;height:42px;border-radius:50%;
+  background:var(--ctrl-bg);border:1px solid var(--ctrl-border);
+  color:var(--c1);font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background .2s,box-shadow .2s,transform .15s;
+  box-shadow:0 2px 10px var(--shadow-col);
+  z-index:16;touch-action:manipulation;
+}
+@media(hover:hover){#btn-react-toggle{cursor:none}}
+#btn-react-toggle:hover{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
+#btn-react-toggle.active{background:var(--c1);color:var(--text-inv)}
+
+/* ════ SONG SELECTION PANEL ════ */
+#song-panel{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .4s;
+  padding:1rem;
+}
+#song-panel.visible{opacity:1;pointer-events:all}
+#song-card{
+  background:var(--ctrl-bg);
+  border:1px solid var(--ctrl-border);
+  border-radius:22px;padding:1.4rem 1.2rem;
+  max-width:min(600px,100%);width:100%;
+  box-shadow:0 8px 40px var(--shadow-col);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  max-height:85dvh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#song-card h2{font-size:.85rem;letter-spacing:.2em;color:var(--c1);text-transform:uppercase;margin-bottom:.3rem;text-align:center}
+#song-card p{font-size:.75rem;color:var(--muted);text-align:center;margin-bottom:.9rem;letter-spacing:.07em}
+
+#song-list{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  grid-template-rows:repeat(2, 1fr);
+  gap:.6rem;
+  margin-bottom:.9rem;
+}
+.song-grid-card{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(128,128,128,.1);
+  border:1px solid var(--ctrl-border);
+  border-radius:12px;padding:.5rem;
+  cursor:pointer;
+  transition:transform .15s, background .15s;
+  touch-action:manipulation;
+}
+@media(hover:hover){.song-grid-card{cursor:none}}
+.song-grid-card:hover{background:var(--ctrl-border);transform:translateY(-2px)}
+.song-grid-img{width:100%;aspect-ratio:1;object-fit:cover;object-position:top;border-radius:8px;margin-bottom:.4rem}
+.song-grid-title{font-size:.78rem;color:var(--text);font-weight:bold;text-align:center;margin-bottom:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.song-grid-artist{font-size:.68rem;color:var(--muted);text-align:center;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Song panel — tablet */
+@media(min-width:600px){
+  #song-card h2{font-size:1rem;letter-spacing:.22em}
+  #song-card p{font-size:.82rem}
+  .song-grid-title{font-size:.92rem}
+  .song-grid-artist{font-size:.76rem}
+  #song-close{font-size:.78rem}
+}
+/* Song panel — desktop */
+@media(min-width:1024px){
+  #song-card h2{font-size:1.1rem;letter-spacing:.24em}
+  #song-card p{font-size:.88rem}
+  .song-grid-title{font-size:1rem;letter-spacing:.02em}
+  .song-grid-artist{font-size:.82rem}
+  #song-close{font-size:.84rem}
+}
+
+#song-close{
+  display:flex;align-items:center;justify-content:center;gap:.35rem;
+  width:100%;
+  background:transparent;border:1.5px solid var(--c1);color:var(--c1);
+  font-family:inherit;font-size:.63rem;letter-spacing:.1em;
+  padding:.5rem;border-radius:12px;
+  cursor:pointer;
+  transition:background .2s,color .2s;
+  touch-action:manipulation;min-height:44px;
+}
+@media(hover:hover){#song-close{cursor:none}}
+#song-close:hover{background:var(--c1);color:var(--text-inv)}
+
+/* ── Song open btn ── */
+#btn-song-open{
+  position:fixed;
+  left:clamp(.6rem,3vw,1rem);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 8.2rem);
+  width:42px;height:42px;border-radius:50%;
+  background:var(--ctrl-bg);border:1px solid var(--ctrl-border);
+  color:var(--c1);font-size:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background .2s,box-shadow .2s,transform .15s;
+  box-shadow:0 2px 10px var(--shadow-col);
+  z-index:16;touch-action:manipulation;
+}
+@media(hover:hover){#btn-song-open{cursor:none}}
+#btn-song-open:hover{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
+
+/* ════ SIDE PANEL ════ */
+/* Hide on very small screens, show from 360px+ */
+#hover-panel{
+  position:fixed;
+  right:clamp(.5rem,2.5vw,1rem);
+  top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:.4rem;
+  z-index:15;opacity:.4;
+  transition:opacity .3s;
+}
+#hover-panel:hover{opacity:1}
+/* on touch always slightly visible */
+@media(hover:none){#hover-panel{opacity:.55}}
+.side-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--ctrl-bg);border:1px solid var(--ctrl-border);
+  color:var(--c1);font-size:.72rem;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background .2s,box-shadow .2s,transform .15s;
+  box-shadow:0 2px 10px var(--shadow-col);
+  touch-action:manipulation;
+}
+@media(hover:hover){.side-btn{cursor:none}}
+.side-btn:hover,.side-btn:active{background:var(--c1);color:var(--text-inv);transform:scale(1.1);box-shadow:0 0 16px var(--c1)}
+.side-btn.active{background:var(--c1);color:var(--text-inv)}
+.side-btn i{font-size:.78rem;pointer-events:none}
+@media(min-width:600px){
+  #hover-panel{gap:.5rem}
+  .side-btn{width:38px;height:38px}
+}
+
+/* ════ PALETTE PICKER ════ */
+#palette-picker{
+  position:fixed;
+  left:clamp(.5rem,2.5vw,1rem);
+  top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:.35rem;
+  z-index:15;opacity:.4;
+  transition:opacity .3s;
+}
+#palette-picker:hover{opacity:1}
+@media(hover:none){#palette-picker{opacity:.55}}
+.pal-dot{
+  width:20px;height:20px;border-radius:50%;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+  box-shadow:0 1px 6px rgba(0,0,0,.2);
+  touch-action:manipulation;
+}
+@media(hover:hover){.pal-dot{cursor:none}}
+.pal-dot:hover,.pal-dot:active{transform:scale(1.3)}
+.pal-dot.active{border-color:var(--text);box-shadow:0 0 10px var(--c1)}
+@media(min-width:600px){.pal-dot{width:22px;height:22px}}
+
+/* ════ LOADING ════ */
+#loading{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1rem;background:var(--bg);transition:opacity .6s;
+}
+#loading.hidden{opacity:0;pointer-events:none}
+.loader-ring{
+  width:46px;height:46px;
+  border:2.5px solid var(--surface);
+  border-top-color:var(--c2);border-right-color:var(--accent);
+  border-radius:50%;animation:spin .75s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:.7rem;color:var(--muted);letter-spacing:.18em}
+
+/* ── Ripple ── */
+.ripple{
+  position:fixed;border-radius:50%;
+  border:1.5px solid var(--c1);
+  pointer-events:none;z-index:5;
+  animation:ripple-out .9s ease forwards;
+}
+@keyframes ripple-out{
+  from{width:6px;height:6px;opacity:.65;transform:translate(-50%,-50%) scale(1)}
+  to{width:200px;height:200px;opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* ── Click splash ── */
+.click-splash{
+  position:fixed;pointer-events:none;z-index:6;border-radius:50%;
+  animation:splash-out .5s ease forwards;
+  background:radial-gradient(circle,var(--c2) 0%,var(--accent) 40%,transparent 70%);
+}
+@keyframes splash-out{
+  from{width:8px;height:8px;opacity:.85;transform:translate(-50%,-50%) scale(0)}
+  to{width:110px;height:110px;opacity:0;transform:translate(-50%,-50%) scale(1)}
+}
+
+/* ── Double-tap flash ── */
+.double-tap-flash{
+  position:fixed;inset:0;pointer-events:none;z-index:8;
+  background:var(--c1);opacity:0;animation:dtflash .25s ease forwards;
+}
+@keyframes dtflash{0%{opacity:.12}50%{opacity:.18}100%{opacity:0}}
+
+/* ── Notification ── */
+.notif{
+  position:fixed;
+  top:calc(env(safe-area-inset-top,0px) + 4.2rem);
+  left:50%;transform:translateX(-50%);
+  background:var(--ctrl-bg);border:1px solid var(--ctrl-border);
+  color:var(--c1);font-size:.6rem;letter-spacing:.12em;
+  padding:.28rem .85rem;border-radius:18px;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  z-index:500;
+  animation:notif-anim 2s ease forwards;
+  pointer-events:none;white-space:nowrap;
+}
+@keyframes notif-anim{
+  0%{opacity:0;transform:translateX(-50%) translateY(-6px)}
+  15%{opacity:1;transform:translateX(-50%) translateY(0)}
+  75%{opacity:1}
+  100%{opacity:0;transform:translateX(-50%) translateY(-8px)}
+}
+
+/* ── Lyric font scale ── */
+@media(min-width:600px){
+  #lyric-wrap{gap:.85rem;padding:5.5rem clamp(1.5rem,4vw,3rem) 8.5rem}
+  .lyric-line{font-size:clamp(1.7rem,4.5vw,3rem);letter-spacing:.11em}
+  body.chorus-mode .lyric-line.current{font-size:clamp(2rem,6vw,3.8rem)}
+  .lyric-line.prev,.lyric-line.next{font-size:clamp(.95rem,2.5vw,1.6rem)}
+}
+@media(min-width:1024px){
+  #lyric-wrap{gap:1.3rem;padding:6rem 4rem 9rem}
+  .lyric-line{font-size:clamp(2rem,3.8vw,3.8rem);letter-spacing:.13em;padding:0 3rem}
+  body.chorus-mode .lyric-line.current{font-size:clamp(2.4rem,5.5vw,4.8rem)}
+  .lyric-line.prev,.lyric-line.next{font-size:clamp(1rem,2vw,1.9rem)}
+  #beat-indicator{margin-top:calc(env(safe-area-inset-top,0px) + 1.8rem);width:16px;height:16px}
+}
+
+/* ── Art Credit ── */
+#art-credit {
+  position:fixed;
+  bottom:8px; right:12px;
+  font-size:14px;
+  color:var(--text);
+  z-index:20;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity .8s;
+}
+body.theme-sun #art-credit {
+  opacity:0.8;
+}
+</style>
+</head>
+<body class="theme-sun st-0">
+
+<div id="bg-layer"></div>
+<div id="sun-orb"></div>
+<div id="sun-rays"></div>
+<canvas id="petals-canvas"></canvas>
+<canvas id="star-canvas"></canvas>
+<canvas id="bin-canvas"></canvas>
+<div id="beat-pulse"></div>
+
+<div id="cursor"></div>
+<div id="cursor-dot"></div>
+
+<!-- ═══ MIKU CHARACTER ═══ -->
+<div id="miku-wrap">
+  <img id="miku-img" src="./sun_miku.webp" alt="Hatsune Miku" draggable="false"/>
+</div>
+<!-- Miku particle canvas -->
+<canvas id="miku-particles"></canvas>
+
+<div id="art-credit">Art by 緜 (wata)</div>
+
+<div id="loading">
+  <div class="loader-ring"></div>
+  <p>LOADING TEXTALIVE…</p>
+</div>
+
+<div id="info-banner">
+  <div class="label-top">Magical Mirai 2026 · Rico Eriansyah</div>
+  <div class="song-name" id="song-title">—</div>
+</div>
+
+<div id="eq-wrap"></div>
+<div id="beat-indicator"></div>
+<div id="chord-badge"></div>
+<div id="phrase-bar-wrap"><div id="phrase-bar-inner"></div></div>
+
+<!-- Reaction bar -->
+<div id="reaction-bar">
+  <div class="react-btn" data-key="fire"  title="Fire!"><i class="fa-solid fa-fire   react-icon"></i><span class="react-count" id="rc-fire">0</span></div>
+  <div class="react-btn" data-key="heart" title="Love!"><i class="fa-solid fa-heart  react-icon"></i><span class="react-count" id="rc-heart">0</span></div>
+  <div class="react-btn" data-key="star"  title="Star!"><i class="fa-solid fa-star   react-icon"></i><span class="react-count" id="rc-star">0</span></div>
+  <div class="react-btn" data-key="bolt"  title="Hype!"><i class="fa-solid fa-bolt   react-icon"></i><span class="react-count" id="rc-bolt">0</span></div>
+</div>
+<div id="btn-react-toggle" title="Reactions (R)"><i class="fa-solid fa-face-grin-stars"></i></div>
+
+<!-- Song Selection panel -->
+<div id="song-panel" class="visible">
+  <div id="song-card">
+    <h2><i class="fa-solid fa-music"></i> &nbsp;SELECT A SONG</h2>
+    <p>Choose a track to play</p>
+    <div id="song-list"></div>
+    <button id="song-close"><i class="fa-solid fa-xmark"></i> &nbsp;CANCEL</button>
+  </div>
+</div>
+<div id="btn-song-open" title="Select Song (L)"><i class="fa-solid fa-list-ul"></i></div>
+
+<!-- Side panel -->
+<div id="hover-panel">
+  <div class="side-btn" id="btn-burst"  title="Icon burst (E)"><i class="fa-solid fa-wand-sparkles"></i></div>
+  <div class="side-btn" id="btn-shake"  title="Shake (W)"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+  <div class="side-btn" id="btn-size"   title="Big font (B)"><i class="fa-solid fa-text-height"></i></div>
+  <div class="side-btn" id="btn-chorus" title="Chorus mode (C)"><i class="fa-solid fa-music"></i></div>
+</div>
+
+<div id="palette-picker"></div>
+
+<div id="stage">
+  <div id="lyric-wrap">
+    <div class="lyric-line prev"    id="lyric-prev"></div>
+    <div class="lyric-line current" id="lyric-current"><i class="fa-solid fa-music"></i></div>
+    <div class="lyric-line next"    id="lyric-next"></div>
+  </div>
+</div>
+
+<div id="controls">
+  <div id="row-top">
+
+    <div id="theme-toggle" role="button" tabindex="0" aria-label="Toggle visual theme">
+      <span class="t-opt active" data-theme="sun"><i class="fa-solid fa-sun"></i> SUN</span>
+      <span class="t-opt"        data-theme="star"><i class="fa-solid fa-star"></i> STAR</span>
+    </div>
+  </div>
+  <div id="btn-row">
+    <button class="btn" id="btn-play" ><i class="fa-solid fa-play"></i>  PLAY</button>
+    <button class="btn" id="btn-pause"><i class="fa-solid fa-pause"></i> PAUSE</button>
+    <button class="btn" id="btn-stop" ><i class="fa-solid fa-stop"></i>  STOP</button>
+  </div>
+</div>
+
+<div id="progress-track">
+  <div id="progress-bar"></div>
+  <div id="progress-thumb"></div>
+</div>
+
+<script>
+/* ════ SONG DATA ════ */
+const SONGS = {
+  "6W2N":{name:"こたえて / imie",url:"https://piapro.jp/t/6W2N/20251215164617",st:0,video:{beatId:4827293,chordId:2963754,repetitiveSegmentId:3086261,lyricId:126519,lyricDiffId:28645}},
+  "zoqO":{name:"アフター・ザ・カーテン / Rulmry",url:"https://piapro.jp/t/zoqO/20251214200738",st:1,video:{beatId:4827294,chordId:2963755,repetitiveSegmentId:3086262,lyricId:126591,lyricDiffId:28627}},
+  "PNpQ":{name:"シャッターチャンス / 夜未アガリ",url:"https://piapro.jp/t/PNpQ/20251209170719",st:2,video:{beatId:4827295,chordId:2963756,repetitiveSegmentId:3086263,lyricId:126542,lyricDiffId:28628}},
+  "B3yJ":{name:"世界最後の音楽隊 / 夏山よつぎ×ど～ぱみん",url:"https://piapro.jp/t/B3yJ/20251215061727",st:3,video:{beatId:4827296,chordId:2963757,repetitiveSegmentId:3086264,lyricId:126594,lyricDiffId:28629}},
+  "QBdL":{name:"トリツクロジー / 鶴三",url:"https://piapro.jp/t/QBdL/20251215094303",st:4,video:{beatId:4827297,chordId:2963758,repetitiveSegmentId:3086265,lyricId:126593,lyricDiffId:28630}},
+  "E2i3":{name:"TAKEOVER / Twinfield",url:"https://piapro.jp/t/E2i3/20251215092113",st:5,video:{beatId:4827298,chordId:2963759,repetitiveSegmentId:3086266,lyricId:126533,lyricDiffId:28631}}
+};
+
+/* ════ DOM refs ════ */
+const $loading    = document.getElementById('loading');
+const $songTitle  = document.getElementById('song-title');
+const $prev       = document.getElementById('lyric-prev');
+const $current    = document.getElementById('lyric-current');
+const $next       = document.getElementById('lyric-next');
+const $beat       = document.getElementById('beat-indicator');
+const $beatPulse  = document.getElementById('beat-pulse');
+const $chord      = document.getElementById('chord-badge');
+const $progressBar= document.getElementById('progress-bar');
+const $progressTr = document.getElementById('progress-track');
+const $progressTh = document.getElementById('progress-thumb');
+const $eqWrap     = document.getElementById('eq-wrap');
+const $toggle     = document.getElementById('theme-toggle');
+const $phraseBar  = document.getElementById('phrase-bar-inner');
+const $phraseWrap = document.getElementById('phrase-bar-wrap');
+const $palette    = document.getElementById('palette-picker');
+const $cursor     = document.getElementById('cursor');
+const $cursorDot  = document.getElementById('cursor-dot');
+const $reactionBar= document.getElementById('reaction-bar');
+const $songPanel  = document.getElementById('song-panel');
+const $songList   = document.getElementById('song-list');
+const $mikuImg   =document.getElementById('miku-img');
+const $mikuWrap  =document.getElementById('miku-wrap');
+const $mikuPc    =document.getElementById('miku-particles');
+
+let currentTheme='sun', currentSt=0, bigFont=false, burstMode=false;
+let chorusMode=false, reactionOpen=false, duration=0;
+
+/* ════ MIKU IMAGES ════ */
+const MIKU_IMGS = {
+  sun:  './sun_miku.webp',
+  star: './star_miku.png'
+};
+
+/* ════ MIKU PARTICLES ════ */
+(function(){
+  const ctx=$mikuPc.getContext('2d');
+  let W,H,particles=[];
+  let isStar=false;
+
+  function resize(){
+    W=$mikuPc.width=$mikuPc.offsetWidth||window.innerWidth*.55;
+    H=$mikuPc.height=$mikuPc.offsetHeight||window.innerHeight*.85;
+  }
+
+  function mkParticle(){
+    const star=isStar;
+    const size=star?(1.5+Math.random()*3):(2+Math.random()*5);
+    return{
+      // spawn along the character silhouette area (right side canvas)
+      x:W*(0.15+Math.random()*0.75),
+      y:H*(0.1+Math.random()*0.85),
+      vx:(Math.random()-.5)*(star?.6:.4),
+      vy:star?(-0.4-Math.random()*.8):(-0.5-Math.random()*1),
+      life:0,
+      maxLife:star?(120+Math.random()*160):(80+Math.random()*120),
+      size,
+      rot:Math.random()*Math.PI*2,
+      rotSpeed:(Math.random()-.5)*.05,
+      type:star?(Math.random()>.5?'star':'circle'):(Math.random()>.6?'flower':'circle'),
+    };
+  }
+
+  function drawStar(ctx,x,y,r,pts=5){
+    ctx.beginPath();
+    for(let i=0;i<pts*2;i++){
+      const a=i*Math.PI/pts - Math.PI/2;
+      const ri=i%2===0?r:r*.45;
+      i===0?ctx.moveTo(x+Math.cos(a)*ri,y+Math.sin(a)*ri):ctx.lineTo(x+Math.cos(a)*ri,y+Math.sin(a)*ri);
+    }
+    ctx.closePath();
+  }
+
+  function drawFlower(ctx,x,y,r){
+    for(let i=0;i<5;i++){
+      const a=(i/5)*Math.PI*2;
+      ctx.beginPath();
+      ctx.ellipse(x+Math.cos(a)*r*.55,y+Math.sin(a)*r*.55,r*.45,r*.22,(i/5)*Math.PI*2,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.beginPath();ctx.arc(x,y,r*.28,0,Math.PI*2);ctx.fill();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    isStar=document.body.classList.contains('theme-star');
+
+    // spawn rate
+    if(Math.random()< (isStar?.18:.14)) particles.push(mkParticle());
+    if(particles.length>90) particles.splice(0,particles.length-90);
+
+    particles.forEach((p,i)=>{
+      p.life++;p.x+=p.vx;p.y+=p.vy;p.rot+=p.rotSpeed;
+      if(isStar) p.vx+=Math.sin(p.life*.04)*.012;
+      const prog=p.life/p.maxLife;
+      const alpha=prog<.2?(prog/.2):prog>.75?((1-prog)/.25):1;
+      const sz=p.size*(prog<.15?prog/.15:1);
+
+      ctx.save();
+      ctx.globalAlpha=alpha*(.6+(Math.sin(p.life*.08)*.15));
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+
+      if(isStar){
+        const g=ctx.createRadialGradient(0,0,0,0,0,sz*2);
+        g.addColorStop(0,'rgba(0,255,247,0.9)');
+        g.addColorStop(.5,'rgba(57,197,187,0.6)');
+        g.addColorStop(1,'rgba(0,200,220,0)');
+        ctx.fillStyle=g;
+        if(p.type==='star'){drawStar(ctx,0,0,sz,5);ctx.fill();}
+        else{ctx.beginPath();ctx.arc(0,0,sz*.7,0,Math.PI*2);ctx.fill();}
+        // tiny glow halo
+        ctx.globalAlpha*=.3;
+        ctx.beginPath();ctx.arc(0,0,sz*2,0,Math.PI*2);
+        ctx.fillStyle='rgba(0,255,247,0.15)';ctx.fill();
+      } else {
+        // sun theme: golden petals + circles
+        if(p.type==='flower'){
+          ctx.fillStyle=`hsl(${38+Math.random()*20},95%,${55+Math.random()*15}%)`;
+          drawFlower(ctx,0,0,sz);
+        } else {
+          const g=ctx.createRadialGradient(0,0,0,0,0,sz*1.5);
+          g.addColorStop(0,'rgba(255,230,50,0.95)');
+          g.addColorStop(.6,'rgba(255,160,0,0.6)');
+          g.addColorStop(1,'rgba(255,100,0,0)');
+          ctx.fillStyle=g;
+          ctx.beginPath();ctx.arc(0,0,sz,0,Math.PI*2);ctx.fill();
+        }
+      }
+      ctx.restore();
+      if(p.life>=p.maxLife) particles.splice(i,1);
+    });
+    requestAnimationFrame(draw);
+  }
+
+  const ro=new ResizeObserver(resize);
+  ro.observe($mikuPc);
+  resize();draw();
+})();
+
+/* ════ REACTIONS ════ */
+const reactions={fire:0,heart:0,star:0,bolt:0};
+const rcEls={fire:document.getElementById('rc-fire'),heart:document.getElementById('rc-heart'),star:document.getElementById('rc-star'),bolt:document.getElementById('rc-bolt')};
+document.querySelectorAll('.react-btn').forEach(btn=>{
+  const trigger=()=>{
+    const k=btn.dataset.key;
+    reactions[k]++;rcEls[k].textContent=reactions[k];
+    btn.classList.add('popped');setTimeout(()=>btn.classList.remove('popped'),380);
+    const r=btn.getBoundingClientRect();
+    spawnIcons(r.left+r.width/2,r.top,4);
+    showNotif(`<i class="fa-solid fa-${k==='fire'?'fire':k==='heart'?'heart':k==='star'?'star':'bolt'}"></i> &nbsp;+1`);
+  };
+  btn.addEventListener('click',trigger);
+  btn.addEventListener('touchend',e=>{e.preventDefault();trigger();},{passive:false});
+});
+document.getElementById('btn-react-toggle').addEventListener('click',()=>{
+  reactionOpen=!reactionOpen;
+  $reactionBar.classList.toggle('visible',reactionOpen);
+  document.getElementById('btn-react-toggle').classList.toggle('active',reactionOpen);
+});
+
+/* ════ SONG SELECTION ════ */
+function renderSongs(){
+  $songList.innerHTML='';
+  Object.keys(SONGS).forEach(key=>{
+    const song=SONGS[key];
+    const parts=song.name.split(' / ');
+    const title=parts[0]||song.name;
+    const artist=parts[1]||'Unknown';
+    const card=document.createElement('div');
+    card.className='song-grid-card';
+    card.dataset.key=key;
+    card.innerHTML=`<img src="${MIKU_IMGS[currentTheme]}" class="song-grid-img" draggable="false"><div class="song-grid-title">${title}</div><div class="song-grid-artist">${artist}</div>`;
+    const selectSong=()=>{
+      userSelectedKey=key;
+      if(playerReady){
+        loadSong(key);
+      }
+      // if not yet ready, onAppReady will pick up userSelectedKey
+      $songPanel.classList.remove('visible');
+    };
+    card.addEventListener('click',selectSong);
+    card.addEventListener('touchend',e=>{e.preventDefault();selectSong();},{passive:false});
+    $songList.appendChild(card);
+  });
+}
+renderSongs();
+document.getElementById('btn-song-open').addEventListener('click',()=>$songPanel.classList.add('visible'));
+document.getElementById('song-close').addEventListener('click',()=>$songPanel.classList.remove('visible'));
+$songPanel.addEventListener('click',e=>{if(e.target===$songPanel)$songPanel.classList.remove('visible')});
+
+/* ════ NOTIFICATION ════ */
+function showNotif(html){
+  const el=document.createElement('div');
+  el.className='notif';el.innerHTML=html;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),2100);
+}
+
+/* ════ PALETTE ════ */
+const SUN_COLORS =['#e8a000','#d4880a','#e06000','#c07a00','#e0b800','#c85000'];
+const STAR_COLORS=['#39c5bb','#7c5cbf','#e85d8a','#f0a500','#3da8e0','#e05050'];
+function buildPalette(){
+  $palette.innerHTML='';
+  const cols=currentTheme==='sun'?SUN_COLORS:STAR_COLORS;
+  cols.forEach((col,i)=>{
+    const d=document.createElement('div');
+    d.className='pal-dot'+(i===currentSt?' active':'');
+    d.style.background=col;d.title=`Color ${i+1}`;
+    const apply=()=>applyTheme(currentTheme,i);
+    d.addEventListener('click',apply);
+    d.addEventListener('touchend',e=>{e.preventDefault();apply();},{passive:false});
+    $palette.appendChild(d);
+  });
+}
+
+/* ════ THEME — swap Miku image on change ════ */
+function applyTheme(theme,st){
+  currentTheme=theme;currentSt=st;
+  document.body.className=`theme-${theme} st-${st}`;
+  $toggle.querySelectorAll('.t-opt').forEach(el=>el.classList.toggle('active',el.dataset.theme===theme));
+  buildPalette();
+
+  // swap Miku image with fade
+  $mikuImg.style.opacity='0';
+  $mikuImg.style.transform='translateY(12px) scale(.97)';
+  setTimeout(()=>{
+    $mikuImg.src=MIKU_IMGS[theme];
+    $mikuImg.style.transition='opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1)';
+    $mikuImg.style.opacity='1';
+    $mikuImg.style.transform='translateY(0) scale(1)';
+  },220);
+  // update song card images to match new theme
+  document.querySelectorAll('.song-grid-img').forEach(img=>img.src=MIKU_IMGS[theme]);
+}
+$toggle.addEventListener('click',()=>applyTheme(currentTheme==='sun'?'star':'sun',currentSt));
+$toggle.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$toggle.click()}});
+
+/* ════ CUSTOM CURSOR (non-touch) ════ */
+let cx=0,cy=0,tx=0,ty=0,trailTimer=0;
+const FA_TRAIL_SUN =['fa-sun','fa-star','fa-music','fa-bolt','fa-fire','fa-leaf'];
+const FA_TRAIL_STAR=['fa-star','fa-moon','fa-bolt','fa-gem','fa-wind','fa-snowflake'];
+document.addEventListener('mousemove',e=>{
+  tx=e.clientX;ty=e.clientY;
+  $cursorDot.style.left=tx+'px';$cursorDot.style.top=ty+'px';
+  const now=Date.now();
+  if(now-trailTimer>78){trailTimer=now;spawnTrailIcon(tx,ty)}
+});
+function animCursor(){cx+=(tx-cx)*.18;cy+=(ty-cy)*.18;$cursor.style.left=cx+'px';$cursor.style.top=cy+'px';requestAnimationFrame(animCursor)}
+animCursor();
+document.addEventListener('mousedown',()=>$cursor.classList.add('clicking'));
+document.addEventListener('mouseup',()=>$cursor.classList.remove('clicking'));
+function spawnTrailIcon(x,y){
+  const list=currentTheme==='sun'?FA_TRAIL_SUN:FA_TRAIL_STAR;
+  const ico=list[Math.floor(Math.random()*list.length)];
+  const el=document.createElement('div');
+  el.className='trail-icon';
+  el.innerHTML=`<i class="fa-solid ${ico}"></i>`;
+  el.style.left=x+'px';el.style.top=y+'px';
+  el.style.color=currentTheme==='sun'?`hsl(${30+Math.random()*30},90%,50%)`:`hsl(${170+Math.random()*40},90%,65%)`;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),750);
+}
+
+/* ════ EQ BARS ════ */
+function getEqCount(){const w=window.innerWidth;return w>=1024?56:w>=600?36:20}
+function buildEqBars(){$eqWrap.innerHTML='';const n=getEqCount();for(let i=0;i<n;i++){const b=document.createElement('div');b.className='eq-bar';$eqWrap.appendChild(b)}}
+buildEqBars();
+const resizeObs=new ResizeObserver(buildEqBars);resizeObs.observe(document.body);
+const getEqBars=()=>document.querySelectorAll('.eq-bar');
+let eqAnim=null;
+function animateEq(intensity=1){getEqBars().forEach((b,i)=>{const wave=Math.sin(Date.now()/300+i*.4)*.3+.7;b.style.height=(4+Math.random()*46*intensity*wave)+'px'});eqAnim=requestAnimationFrame(()=>animateEq(intensity))}
+function stopEq(){if(eqAnim){cancelAnimationFrame(eqAnim);eqAnim=null}getEqBars().forEach(b=>b.style.height='4px')}
+
+/* ════ SUNFLOWER PETALS ════ */
+(function(){
+  const canvas=document.getElementById('petals-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,petals=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  function drawPetal(x,y,sz,ang,col,a){ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.rotate(ang);ctx.beginPath();ctx.ellipse(0,-sz*.5,sz*.22,sz*.5,0,0,Math.PI*2);ctx.fillStyle=col;ctx.shadowColor=col;ctx.shadowBlur=4;ctx.fill();ctx.restore()}
+  function drawSunflower(x,y,r,ang,a){ctx.save();ctx.globalAlpha=a;ctx.translate(x,y);ctx.rotate(ang);const pc=['#f5c800','#ff9500','#ffdf00','#ff6f00'];for(let i=0;i<12;i++){ctx.save();ctx.rotate((i/12)*Math.PI*2);ctx.beginPath();ctx.ellipse(0,-(r*.85),r*.22,r*.52,0,0,Math.PI*2);ctx.fillStyle=pc[i%4];ctx.fill();ctx.restore()}ctx.beginPath();ctx.arc(0,0,r*.35,0,Math.PI*2);ctx.fillStyle='#3e2000';ctx.fill();ctx.restore()}
+  function mk(){const sf=Math.random()<.15;return{x:Math.random()*W,y:Math.random()*-200,sz:sf?(14+Math.random()*18):(8+Math.random()*14),vx:(Math.random()-.5)*.6,vy:.5+Math.random()*.9,ang:Math.random()*Math.PI*2,va:(Math.random()-.5)*.025,alpha:.4+Math.random()*.45,col:['#f5c800','#ff9500','#ffdf00','#ff6f00','#ffe082'][Math.floor(Math.random()*5)],sf,sw:Math.random()*.4,so:Math.random()*Math.PI*2,t:0}}
+  function init(){resize();petals=Array.from({length:44},mk)}
+  function draw(){ctx.clearRect(0,0,W,H);petals.forEach((p,i)=>{p.t+=.02;p.x+=p.vx+Math.sin(p.t+p.so)*p.sw;p.y+=p.vy;p.ang+=p.va;if(p.sf)drawSunflower(p.x,p.y,p.sz,p.ang,p.alpha);else drawPetal(p.x,p.y,p.sz,p.ang,p.col,p.alpha);if(p.y>H+40)petals[i]=mk()});requestAnimationFrame(draw)}
+  window.addEventListener('resize',resize);init();draw();
+})();
+
+/* ════ STARFIELD ════ */
+(function(){
+  const canvas=document.getElementById('star-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,stars=[];
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+  function mk(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,vx:(Math.random()-.5)*.07,vy:(Math.random()-.5)*.07,a:Math.random()*.7+.2,tw:Math.random()*.02}}
+  function init(){resize();stars=Array.from({length:260},mk)}
+  function draw(){ctx.clearRect(0,0,W,H);for(const s of stars){s.x+=s.vx;s.y+=s.vy;s.a+=s.tw;if(s.a>.9||s.a<.1)s.tw*=-1;if(s.x<0)s.x=W;if(s.x>W)s.x=0;if(s.y<0)s.y=H;if(s.y>H)s.y=0;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,240,255,${s.a})`;ctx.fill()}requestAnimationFrame(draw)}
+  window.addEventListener('resize',resize);init();draw();
+})();
+
+/* ════ BINARY RAIN ════ */
+(function(){
+  const canvas=document.getElementById('bin-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,cols,drops=[];
+  const FS=13;
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;cols=Math.floor(W/FS);drops=Array.from({length:cols},()=>Math.random()*H/FS|0)}
+  function draw(){const isSun=document.body.classList.contains('theme-sun');ctx.fillStyle=isSun?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.04)';ctx.fillRect(0,0,W,H);ctx.fillStyle=isSun?'#e8a00044':'#0ff0e444';ctx.font=FS+'px monospace';for(let i=0;i<drops.length;i++){ctx.globalAlpha=Math.random()*.22+.03;ctx.fillText(Math.random()>.5?'1':'0',i*FS,drops[i]*FS);if(drops[i]*FS>H&&Math.random()>.975)drops[i]=0;drops[i]++}ctx.globalAlpha=1;requestAnimationFrame(draw)}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+/* ════ EFFECTS ════ */
+function spawnRipple(){const el=document.createElement('div');el.className='ripple';el.style.left=(15+Math.random()*70)+'vw';el.style.top=(20+Math.random()*60)+'vh';el.style.borderColor=currentTheme==='sun'?`hsl(${38+Math.random()*28},80%,52%)`:`hsl(${175+Math.random()*20},90%,65%)`;document.body.appendChild(el);setTimeout(()=>el.remove(),950)}
+function spawnBurstRing(){for(let i=0;i<3;i++){const el=document.createElement('div');el.className='burst-ring';el.style.animationDelay=(i*.12)+'s';el.style.borderColor=currentTheme==='sun'?`hsl(${35+i*10},90%,52%)`:`hsl(${175+i*12},90%,62%)`;document.body.appendChild(el);setTimeout(()=>el.remove(),900)}}
+function spawnSplash(x,y){const el=document.createElement('div');el.className='click-splash';el.style.left=x+'px';el.style.top=y+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),550)}
+
+const FA_SUN  =['fa-sun','fa-music','fa-star','fa-heart','fa-bolt','fa-fire','fa-feather','fa-leaf','fa-seedling','fa-circle-dot'];
+const FA_STAR =['fa-star','fa-music','fa-moon','fa-bolt','fa-gem','fa-snowflake','fa-wind','fa-infinity','fa-circle-dot','fa-satellite'];
+function spawnIcons(x,y,count){
+  const list=currentTheme==='sun'?FA_SUN:FA_STAR;
+  const n=count||(3+Math.floor(Math.random()*4));
+  for(let i=0;i<n;i++){
+    const el=document.createElement('div');el.className='float-icon';
+    const ico=list[Math.floor(Math.random()*list.length)];
+    el.innerHTML=`<i class="fa-solid ${ico}"></i>`;
+    el.style.left=(x+(Math.random()-.5)*80)+'px';el.style.top=(y+(Math.random()-.5)*40)+'px';
+    el.style.animationDelay=(Math.random()*.2)+'s';
+    el.style.color=currentTheme==='sun'?`hsl(${30+Math.random()*30},100%,${44+Math.random()*20}%)`:`hsl(${168+Math.random()*45},90%,${55+Math.random()*20}%)`;
+    el.style.fontSize=(.7+Math.random()*.6)+'rem';
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1600);
+  }
+}
+function spawnDtFlash(){const el=document.createElement('div');el.className='double-tap-flash';document.body.appendChild(el);setTimeout(()=>el.remove(),280)}
+
+/* ════ CLICKS / TAPS ════ */
+let lastClickTime=0;
+function handleTap(x,y){
+  const now=Date.now();
+  if(now-lastClickTime<380){
+    spawnDtFlash();
+    player?.isPlaying?player.requestPause():player?.requestPlay();
+    showNotif(player?.isPlaying?'<i class="fa-solid fa-pause"></i> &nbsp;PAUSED':'<i class="fa-solid fa-play"></i> &nbsp;PLAYING');
+    lastClickTime=0;
+  } else {
+    spawnSplash(x,y);
+    lastClickTime=now;
+  }
+}
+const IGNORE_IDS=['controls','hover-panel','palette-picker','info-banner','reaction-bar','btn-react-toggle','song-panel','btn-song-open','btn-play','btn-pause','btn-stop','theme-toggle','progress-track','song-close'];
+function isIgnored(el){return IGNORE_IDS.some(id=>el.closest('#'+id))}
+document.addEventListener('click',e=>{if(!isIgnored(e.target))handleTap(e.clientX,e.clientY)});
+/* Touch: tap on lyric area */
+let touchTapX=0,touchTapY=0,touchMoved=false;
+document.addEventListener('touchstart',e=>{touchTapX=e.touches[0].clientX;touchTapY=e.touches[0].clientY;touchMoved=false;},{passive:true});
+document.addEventListener('touchmove',()=>{touchMoved=true;},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(touchMoved)return;
+  const t=e.changedTouches[0];
+  if(!isIgnored(e.target))handleTap(t.clientX,t.clientY);
+},{passive:true});
+
+/* ════ SHAKE ════ */
+const shakeStyle=document.createElement('style');
+shakeStyle.textContent=`@keyframes shake-it{0%{transform:translateX(0)}15%{transform:translateX(-10px) rotate(-2deg)}30%{transform:translateX(10px) rotate(2deg)}45%{transform:translateX(-8px) rotate(-1deg)}60%{transform:translateX(8px) rotate(1deg)}75%{transform:translateX(-4px)}90%{transform:translateX(4px)}100%{transform:translateX(0)}}`;
+document.head.appendChild(shakeStyle);
+function shakeLyrics(){[$prev,$current,$next].forEach(el=>{el.style.animation='none';void el.offsetHeight;el.style.animation='shake-it 0.5s cubic-bezier(.22,1,.36,1)';setTimeout(()=>el.style.animation='',540)})}
+
+/* ════ SIDE BTNS ════ */
+document.getElementById('btn-burst').addEventListener('click',()=>{burstMode=!burstMode;document.getElementById('btn-burst').classList.toggle('active',burstMode);showNotif(burstMode?'<i class="fa-solid fa-wand-sparkles"></i> &nbsp;BURST ON':'<i class="fa-solid fa-wand-sparkles"></i> &nbsp;BURST OFF');if(burstMode)spawnIcons(window.innerWidth/2,window.innerHeight/2,6)});
+document.getElementById('btn-shake').addEventListener('click',()=>{shakeLyrics();spawnIcons(window.innerWidth/2,window.innerHeight/3,5)});
+document.getElementById('btn-size').addEventListener('click',()=>{bigFont=!bigFont;document.getElementById('btn-size').classList.toggle('active',bigFont);document.getElementById('lyric-wrap').style.transform=bigFont?'scale(1.12)':'';showNotif(bigFont?'<i class="fa-solid fa-text-height"></i> &nbsp;BIG FONT':'<i class="fa-solid fa-text-height"></i> &nbsp;NORMAL FONT')});
+document.getElementById('btn-chorus').addEventListener('click',()=>{chorusMode=!chorusMode;document.getElementById('btn-chorus').classList.toggle('active',chorusMode);document.body.classList.toggle('chorus-mode',chorusMode);showNotif(chorusMode?'<i class="fa-solid fa-music"></i> &nbsp;CHORUS MODE':'<i class="fa-solid fa-music"></i> &nbsp;NORMAL MODE')});
+
+/* ════ PROGRESS BAR — mouse + touch ════ */
+let isDragging=false;
+function seekTo(pct){
+  if(!player||!duration)return;
+  const p=Math.max(0,Math.min(1,pct));
+  $progressBar.style.width=(p*100)+'%';
+  $progressTh.style.setProperty('--pct',(p*100)+'%');
+  player.requestMediaSeek(p*duration);
+}
+function pctFromEvent(e,rect){return(e.clientX-rect.left)/rect.width}
+$progressTr.addEventListener('mousedown',e=>{isDragging=true;seekTo(pctFromEvent(e,$progressTr.getBoundingClientRect()))});
+document.addEventListener('mousemove',e=>{if(isDragging)seekTo(pctFromEvent(e,$progressTr.getBoundingClientRect()))});
+document.addEventListener('mouseup',()=>isDragging=false);
+$progressTr.addEventListener('touchstart',e=>{isDragging=true;const r=$progressTr.getBoundingClientRect();seekTo((e.touches[0].clientX-r.left)/r.width)},{passive:true});
+document.addEventListener('touchmove',e=>{if(isDragging){const r=$progressTr.getBoundingClientRect();seekTo((e.touches[0].clientX-r.left)/r.width)}},{passive:true});
+document.addEventListener('touchend',()=>isDragging=false,{passive:true});
+
+/* ════ LYRIC HELPERS ════ */
+function buildPhraseHtml(text){if(!text)return'';return[...text].map((ch,i)=>`<span class="char-unit" data-idx="${i}">${ch===' '?'&nbsp;':ch}</span>`).join('')}
+function buildCharMap(phrase){
+  const ft=phrase.text||'',tm=new Array([...ft].length).fill(null);
+  let cp=0,w=phrase.firstWord;
+  while(w){
+    const wc=[...(w.text||'')],fc=[...ft];let ws=-1;
+    for(let i=cp;i<=fc.length-wc.length;i++){let ok=true;for(let k=0;k<wc.length;k++){if(fc[i+k]!==wc[k]){ok=false;break}}if(ok){ws=i;break}}
+    if(ws>=0){cp=ws;let c=w.firstChar,co=0;while(c){const cl=[...(c.text||'')].length;for(let k=0;k<cl;k++){if(cp+co+k<tm.length)tm[cp+co+k]={startTime:c.startTime,endTime:c.endTime,wordStart:ws,wordEnd:ws+wc.length-1}}co+=cl;c=c.next}cp+=wc.length}
+    w=w.next;
+  }
+  return tm;
+}
+
+let player=null,phrases=[],currentPhraseIdx=-1,charMaps=[];
+let userSelectedKey=null;   // set when user explicitly picks a song
+let playerReady=false;
+let isCreating=false;       // true while createFromSongUrl is in flight
+let pendingAfterCreate=null;// queued song key to load once current creation finishes
+let currentPhraseStart=0,currentPhraseEnd=0;
+
+function attachCharListeners(){
+  const units=document.querySelectorAll('#lyric-current .char-unit');
+  units.forEach((el,i)=>{
+    const burst=e=>{e.stopPropagation();el.classList.add('burst');setTimeout(()=>el.classList.remove('burst'),480);spawnIcons(e.clientX||e.touches?.[0]?.clientX||window.innerWidth/2,e.clientY||e.touches?.[0]?.clientY||window.innerHeight/2,4)};
+    el.addEventListener('click',burst);
+    el.addEventListener('touchend',e=>{e.preventDefault();burst(e);},{passive:false});
+    el.addEventListener('dblclick',e=>{
+      e.stopPropagation();
+      const tm=charMaps[currentPhraseIdx];if(!tm||!tm[i])return;
+      const{wordStart,wordEnd}=tm[i];
+      units.forEach((u,j)=>{if(j>=wordStart&&j<=wordEnd){u.classList.add('word-glow');setTimeout(()=>u.classList.remove('word-glow'),750)}});
+      spawnIcons(e.clientX,e.clientY,6);
+    });
+  });
+}
+
+function updatePhrase(idx){
+  if(idx===currentPhraseIdx)return;
+  currentPhraseIdx=idx;
+  $prev.innerHTML   =phrases[idx-1]?.text?buildPhraseHtml(phrases[idx-1].text):'';
+  $current.innerHTML=phrases[idx]?.text  ?buildPhraseHtml(phrases[idx].text):'';
+  $next.innerHTML   =phrases[idx+1]?.text?buildPhraseHtml(phrases[idx+1].text):'';
+  attachCharListeners();
+  if(phrases[idx]){currentPhraseStart=phrases[idx].startTime;currentPhraseEnd=phrases[idx].endTime;$phraseWrap.classList.add('visible')}
+  spawnBurstRing();
+  if(burstMode)spawnIcons(window.innerWidth/2,window.innerHeight*.38,5);
+}
+
+function highlightChars(pos,pi){
+  const tm=charMaps[pi];if(!tm)return;
+  const units=document.querySelectorAll('#lyric-current .char-unit');
+  units.forEach((el,i)=>{
+    const t=tm[i];if(!t){el.classList.remove('active','passed');return}
+    if(pos>=t.startTime&&pos<t.endTime){el.classList.add('active');el.classList.remove('passed')}
+    else if(pos>=t.endTime){el.classList.remove('active');el.classList.add('passed')}
+    else{el.classList.remove('active','passed')}
+  });
+  if(currentPhraseEnd>currentPhraseStart){
+    const pct=Math.min(100,Math.max(0,((pos-currentPhraseStart)/(currentPhraseEnd-currentPhraseStart))*100));
+    $phraseBar.style.width=pct+'%';
+  }
+}
+function clearHighlight(){document.querySelectorAll('#lyric-current .char-unit').forEach(el=>el.classList.remove('active','passed'));$phraseWrap.classList.remove('visible');$phraseBar.style.width='0%'}
+
+/* ════ PLAYER ════ */
+function initPlayer(){
+  const{Player}=TextAliveApp;
+  player=new Player({app:{token:"E96Wa5egutbj0ueY"},mediaElement:document.createElement('audio'),mediaBannerPosition:'top left'});
+  player.addListener({
+    onAppReady(app){playerReady=true;if(!app.managed&&userSelectedKey)loadSong(userSelectedKey);$loading.classList.add('hidden')},
+    onVideoReady(v){phrases=[];charMaps=[];let p=v.firstPhrase;while(p){phrases.push(p);charMaps.push(buildCharMap(p));p=p.next}currentPhraseIdx=-1;$current.innerHTML='<i class="fa-solid fa-music"></i>';$prev.innerHTML='';$next.innerHTML=''},
+    onTimerReady(){duration=player.video?.duration||0},
+    onTimeUpdate(pos){
+      if(!player.video)return;
+      duration=player.video.duration||duration;
+      if(duration>0){const pct=(pos/duration)*100;$progressBar.style.width=pct+'%';$progressTh.style.setProperty('--pct',pct+'%')}
+      let found=-1;
+      for(let i=0;i<phrases.length;i++){if(pos>=phrases[i].startTime&&pos<phrases[i].endTime){found=i;break}}
+      if(found>=0){updatePhrase(found);highlightChars(pos,found)}else clearHighlight();
+    },
+    onBeat(b){
+      $beatPulse.classList.add('on');setTimeout(()=>$beatPulse.classList.remove('on'),100);
+      $beat.classList.add('on');spawnRipple();setTimeout(()=>$beat.classList.remove('on'),130);
+      $mikuImg.classList.add('on-beat');setTimeout(()=>$mikuImg.classList.remove('on-beat'),200);
+    },
+    onChord(chord){if(chord?.name){$chord.textContent=chord.name;$chord.classList.add('visible');clearTimeout($chord._t);$chord._t=setTimeout(()=>$chord.classList.remove('visible'),1400)}},
+    onPlay(){animateEq()},
+    onPause(){stopEq()},
+    onStop(){stopEq();$progressBar.style.width='0%';$progressTh.style.setProperty('--pct','0%');$current.innerHTML='<i class="fa-solid fa-music"></i>';$prev.innerHTML='';$next.innerHTML='';clearHighlight()}
+  });
+}
+
+function loadSong(key){
+  const song=SONGS[key];if(!song||!player)return;
+  // SDK doesn't allow parallel createFromSongUrl calls — queue if one is in flight
+  if(isCreating){
+    pendingAfterCreate=key;
+    applyTheme(currentTheme,song.st);
+    $songTitle.textContent=song.name;
+    return;
+  }
+  pendingAfterCreate=null;
+  applyTheme(currentTheme,song.st);
+  $songTitle.textContent=song.name;
+  $loading.classList.remove('hidden');
+  isCreating=true;
+  const finish=()=>{
+    isCreating=false;
+    $loading.classList.add('hidden');
+    if(pendingAfterCreate){
+      const nk=pendingAfterCreate;
+      pendingAfterCreate=null;
+      loadSong(nk);
+    }
+  };
+  player.createFromSongUrl(song.url,{video:song.video}).then(finish).catch(err=>{console.error(err);finish()});
+}
+
+document.getElementById('btn-play') .addEventListener('click',()=>player?.requestPlay());
+document.getElementById('btn-pause').addEventListener('click',()=>player?.requestPause());
+document.getElementById('btn-stop') .addEventListener('click',()=>player?.requestStop());
+
+/* ════ KEYBOARD ════ */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
+  switch(e.code){
+    case'Space':   e.preventDefault();player?.isPlaying?player.requestPause():player?.requestPlay();break;
+    case'KeyP':    player?.requestPlay();break;
+    case'KeyS':    player?.requestStop();break;
+    case'KeyT':    $toggle.click();break;
+    case'KeyE':    document.getElementById('btn-burst').click();break;
+    case'KeyW':    document.getElementById('btn-shake').click();break;
+    case'KeyB':    document.getElementById('btn-size').click();break;
+    case'KeyC':    document.getElementById('btn-chorus').click();break;
+    case'KeyR':    document.getElementById('btn-react-toggle').click();break;
+    case'KeyM':    document.getElementById('btn-song-open').click();break;
+    case'ArrowRight':if(player&&duration){player.requestMediaSeek(Math.min(duration,(player.timer?.position||0)+5000));showNotif('<i class="fa-solid fa-forward"></i> &nbsp;+5s')}break;
+    case'ArrowLeft': if(player&&duration){player.requestMediaSeek(Math.max(0,(player.timer?.position||0)-5000));showNotif('<i class="fa-solid fa-backward"></i> &nbsp;-5s')}break;
+    default:if(e.code.startsWith('Digit')){const n=parseInt(e.key)-1;if(n>=0&&n<=5)applyTheme(currentTheme,n)}
+  }
+});
+
+/* ════ SWIPE LEFT/RIGHT = theme toggle ════ */
+let swipeStartX=0,swipeStartY=0;
+document.addEventListener('touchstart',e=>{swipeStartX=e.touches[0].clientX;swipeStartY=e.touches[0].clientY;},{passive:true});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-swipeStartX;
+  const dy=e.changedTouches[0].clientY-swipeStartY;
+  if(Math.abs(dx)>85&&Math.abs(dx)>Math.abs(dy)*1.5)applyTheme(currentTheme==='sun'?'star':'sun',currentSt);
+},{passive:true});
+
+/* ════ INIT ════ */
+buildPalette();
+initPlayer();
+</script>
+</body>
+</html>
