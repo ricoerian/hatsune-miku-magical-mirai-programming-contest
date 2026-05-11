@@ -6,6 +6,8 @@
 <title>Magical Mirai 2026 · Lyric App · Rico Eriansyah</title>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://unpkg.com/textalive-app-api/dist/index.js"></script>
+<link rel="apple-touch-icon" href="./touch-icon.png" sizes="180x180">
+<link rel="icon" type="image/png" href="./touch-icon.png" sizes="192x192">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Zen+Kurenaido&family=Noto+Serif+JP:wght@300;400;700&display=swap');
@@ -919,14 +921,14 @@ const Portrait = (function(){
   }
 
   /* ── Build slot positions ── */
-  function buildSlots(targetCount, expectedChars){
+  function buildSlots(targetCount, expectedChars, fontMin, fontMax){
     slots = [];
     if(!alphaMap || !colorMap) return;
 
     totalExpChars = expectedChars || 1;
     const ALPHA_THRESH = 30;
-    const FONT_MIN = 5;
-    const FONT_MAX = 9;
+    const FONT_MIN = fontMin || 5;
+    const FONT_MAX = fontMax || 9;
 
     // Collect ALL valid pixel positions top→bottom, left→right
     const candidates = [];
@@ -960,7 +962,6 @@ const Portrait = (function(){
       if(slots.length >= total) break;
       const c = candidates[i];
       const dens = localDensity(c.gx, c.gy);
-      // Smaller fonts for finer detail; dense areas slightly bigger
       const fs = Math.round(FONT_MIN + (FONT_MAX - FONT_MIN) * dens);
       // Get the actual pixel color from the source image
       const pixelIdx = c.gy * imgW + c.gx;
@@ -969,6 +970,7 @@ const Portrait = (function(){
         nx: c.nx,
         ny: c.ny,
         fontSize: fs,
+        origFontSize: fs,
         char: '',
         placed: false,
         active: false,
@@ -983,7 +985,7 @@ const Portrait = (function(){
     slotIdx = 0;
     // Compute how many slots each lyric character should fill
     slotsPerChar = Math.max(1, Math.floor(slots.length / totalExpChars));
-    console.log(`Portrait: ${slots.length} slots built (target ${total}), ${slotsPerChar} slots/char for ${totalExpChars} expected chars`);
+    console.log(`Portrait: ${slots.length} slots built (target ${total}), slotsPerChar=${slotsPerChar}, font ${FONT_MIN}-${FONT_MAX}px for ${totalExpChars} expected chars`);
   }
 
   /* ── Resize canvas to fill viewport ── */
@@ -1012,21 +1014,32 @@ const Portrait = (function(){
   }
 
   /* ── Place next N chars from a text (each char fills slotsPerChar slots) ── */
+  /* First slot = actual lyric at boosted font; remaining slots = colored dot for density */
   function placeChars(text, count){
     if(!slots.length || !text) return;
-    const chars = [...text].filter(c => c.trim()); // skip whitespace
+    const chars = [...text].filter(c => c.trim());
     const now = performance.now();
     let ci = 0;
     while(ci < chars.length && ci < count){
-      // Fill slotsPerChar consecutive slots with this character
       for(let r = 0; r < slotsPerChar; r++){
         if(slotIdx >= slots.length) break;
         const slot = slots[slotIdx];
-        slot.char    = chars[ci];
-        slot.placed  = true;
-        slot.active  = (r === 0); // only first slot gets glow
-        slot.opacity = (r === 0) ? 0 : 0.3; // others fade in from partial
-        slot.glowIntensity = (r === 0) ? 1 : 0;
+        if(r === 0){
+          // Primary: actual lyric character at moderately boosted font
+          slot.char     = chars[ci];
+          slot.fontSize = Math.min(14, Math.round(slot.origFontSize * 1.6));
+          slot.placed   = true;
+          slot.active   = true;
+          slot.opacity  = 0;
+          slot.glowIntensity = 1;
+        } else {
+          // Secondary: colored dot to maintain portrait density
+          slot.char     = '*';
+          slot.placed   = true;
+          slot.active   = false;
+          slot.opacity  = 0.5;
+          slot.glowIntensity = 0;
+        }
         slot.placedAt = now;
         slotIdx++;
       }
@@ -1046,11 +1059,20 @@ const Portrait = (function(){
       for(let r = 0; r < slotsPerChar; r++){
         if(slotIdx >= slots.length) return;
         const slot = slots[slotIdx];
-        slot.char = chars[ci];
-        slot.placed = true;
-        slot.active = false;
-        slot.opacity = 1;
-        slot.glowIntensity = 0;
+        if(r === 0){
+          slot.char     = chars[ci];
+          slot.fontSize = Math.min(14, Math.round(slot.origFontSize * 1.6));
+          slot.placed   = true;
+          slot.active   = false;
+          slot.opacity  = 1;
+          slot.glowIntensity = 0;
+        } else {
+          slot.char     = '*';
+          slot.placed   = true;
+          slot.active   = false;
+          slot.opacity  = 0.7;
+          slot.glowIntensity = 0;
+        }
         slot.placedAt = now;
         slotIdx++;
       }
@@ -1058,23 +1080,19 @@ const Portrait = (function(){
     updateCounter();
   }
 
-  /* ── Fill ALL remaining empty slots by cycling through text (ensures 100%) ── */
-  function fillRemaining(allText){
-    if(!allText || slotIdx >= slots.length) return;
-    const chars = [...allText].filter(c => c.trim());
-    if(!chars.length) return;
+  /* ── Fill ALL remaining empty slots with colored dots (ensures 100% without repeating lyrics) ── */
+  function fillRemaining(){
+    if(slotIdx >= slots.length) return;
     const now = performance.now();
-    let ci = 0;
     while(slotIdx < slots.length){
       const slot = slots[slotIdx];
-      slot.char    = chars[ci % chars.length];
+      slot.char    = '*';
       slot.placed  = true;
       slot.active  = false;
       slot.opacity = 0;
       slot.glowIntensity = 0;
       slot.placedAt = now;
       slotIdx++;
-      ci++;
     }
     updateCounter();
   }
@@ -1086,7 +1104,10 @@ const Portrait = (function(){
 
   /* ── Reset for new song ── */
   function resetSlots(){
-    slots.forEach(s=>{ s.char=''; s.placed=false; s.active=false; s.opacity=0; s.glowIntensity=0; });
+    slots.forEach(s=>{
+      s.char=''; s.placed=false; s.active=false; s.opacity=0; s.glowIntensity=0;
+      s.fontSize = s.origFontSize || s.fontSize;
+    });
     slotIdx = 0;
     activeSlotIdx = -1;
     isZoomedOut = false;
@@ -1589,12 +1610,12 @@ function initPlayer(){
       phrases.forEach(ph=>{
         totalChars += [...(ph.text||'')].filter(c=>c.trim()).length;
       });
-      // Use a high slot count for dense, detailed portrait rendering
-      // 10000 slots provides excellent image fidelity
+      // 10000 slots for maximum portrait accuracy
+      // Each lyric char appears once at boosted font; remaining slots = colored dots
       const targetSlots = 10000;
-      console.log(`Total lyric chars: ${totalChars} → building ${targetSlots} slots`);
+      console.log(`Total lyric chars: ${totalChars} → building ${targetSlots} slots (no-repeat lyrics)`);
 
-      // Rebuild portrait slots — pass totalChars so slotsPerChar ratio is computed
+      // Rebuild portrait slots with base 5-9px fonts (lyrics get boosted automatically)
       Portrait.buildSlots(targetSlots, totalChars);
     },
     onTimerReady(){duration=player.video?.duration||0},
@@ -1618,8 +1639,7 @@ function initPlayer(){
 
           // After the LAST phrase ends, fill any remaining slots to guarantee 100%
           if(currentPhraseIdx === phrases.length - 1 && Portrait.slotIdx < Portrait.totalSlots){
-            const allText = phrases.map(p => p.text || '').join('');
-            Portrait.fillRemaining(allText);
+            Portrait.fillRemaining();
           }
 
           currentPhraseIdx=-1;
@@ -1696,6 +1716,7 @@ document.addEventListener('touchend',e=>{
 
 /* ════ INIT ════ */
 buildPalette();
+applyTheme('star', 0);
 initPlayer();
 </script>
 </body>
